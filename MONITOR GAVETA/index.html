@@ -40,7 +40,8 @@
     .menu-toggle .bars{display:grid;gap:3px}
 
     .menu-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);z-index:90}
-    .menu-drawer{position:fixed;top:0;right:0;height:100%;width:min(360px,88vw);background:#0b0b10;border-left:1px solid var(--line2);z-index:100;display:flex;flex-direction:column;box-shadow:-16px 0 42px rgba(0,0,0,.35)}
+    .menu-drawer{position:fixed;top:0;right:0;height:100%;width:min(360px,88vw);background:#0b0b10;border-left:1px solid var(--line2);z-index:100;display:flex;flex-direction:column;box-shadow:-16px 0 42px rgba(0,0,0,.35);transform:translateX(102%);opacity:0;transition:transform .28s ease, opacity .28s ease;will-change:transform,opacity}
+    .menu-drawer:not(.hidden){transform:translateX(0);opacity:1}
     .menu-drawer-head{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
     .menu-drawer-head h3{margin:0 0 4px;font:800 20px/1 Syne,sans-serif}
     .menu-drawer-head p{margin:0;color:var(--muted);font-size:12px}
@@ -435,7 +436,6 @@
     const spotifyUrl = String(item?.spotifyUrl || '').trim();
     const youtubeUrl = String(item?.youtubeUrl || '').trim();
     const spotifyArtistId = extractSpotifyId(spotifyUrl) || String(item?.spotifyArtistId || '').trim() || undefined;
-    const cmArtistId = Number(item?.cmArtistId || item?.chartmetricArtistId || 0) || undefined;
 
     if (!artistName || !spotifyArtistId) return null;
 
@@ -444,7 +444,6 @@
       spotifyUrl,
       youtubeUrl,
       spotifyArtistId,
-      cmArtistId,
     };
   }
 
@@ -522,7 +521,7 @@
       spotifyUrl: String(a?.spotifyUrl || '').trim(),
       youtubeUrl: String(a?.youtubeUrl || '').trim(),
       spotifyArtistId: String(a?.spotifyArtistId || '').trim(),
-      cmArtistId: Number(a?.cmArtistId || 0) || 0,
+      cmArtistId: Number(a?.cmArtistId || 0) || undefined,
     }));
     return JSON.stringify(normalized);
   }
@@ -573,10 +572,10 @@
 
   function computePriorityLocal(artist) {
     let score = 0;
-    score += Number(artist?.spotify?.monthlyListeners?.value || 0) / 100000;
+    score += Number(artist?.spotify?.popularity || 0) / 100;
     score += Number(artist?.youtube?.channelViews || 0) / 10000000;
-    score += Number(artist?.spotify?.followers?.value || 0) / 200000;
-    score += Number(artist?.spotify?.singles?.[0]?.plays || 0) / 1000000;
+    score += Number(artist?.spotify?.followers || 0) / 200000;
+    score += Number(artist?.spotify?.topTracks?.[0]?.popularity || 0) / 100;
     score += Number(artist?.youtube?.latestVideos?.[0]?.views || 0) / 1000000;
     return score;
   }
@@ -587,7 +586,7 @@
       .map(item => ({
         artistName: item.artistName,
         imageUrl: item.imageUrl,
-        monthlyListeners: item.spotify?.monthlyListeners?.value || 0,
+        spotifyPopularity: item.spotify?.popularity || 0,
         youtubeViews: item.youtube?.channelViews || 0,
         priorityScore: computePriorityLocal(item),
       }))
@@ -691,7 +690,6 @@
       spotifyUrl: String(item?.spotifyUrl || '').trim(),
       youtubeUrl: String(item?.youtubeUrl || '').trim(),
       spotifyArtistId: String(item?.spotifyArtistId || '').trim() || undefined,
-      cmArtistId: Number(item?.cmArtistId || item?.chartmetricArtistId || 0) || undefined,
     })).filter(item => item.artistName && extractSpotifyId(item.spotifyUrl));
 
     if (!normalized.length) throw new Error('Nenhum artista válido foi encontrado no arquivo.');
@@ -723,14 +721,12 @@
       if (!hit) return entry;
 
       const nextSpotifyArtistId = String(hit.spotifyArtistId || localSpotifyId || '').trim() || undefined;
-      const nextCmArtistId = Number(hit.chartmetricArtistId || hit.cmArtistId || entry.cmArtistId || 0) || undefined;
 
-      if (entry.spotifyArtistId !== nextSpotifyArtistId || Number(entry.cmArtistId || 0) !== Number(nextCmArtistId || 0)) {
+      if (entry.spotifyArtistId !== nextSpotifyArtistId) {
         changed = true;
         return {
           ...entry,
           spotifyArtistId: nextSpotifyArtistId,
-          cmArtistId: nextCmArtistId,
         };
       }
 
@@ -879,9 +875,9 @@
 
     const sp = a.spotify || {};
     const yt = a.youtube || {};
-    const ml = sp.monthlyListeners || {};
-    const fl = sp.followers || {};
-    const singles = Array.isArray(sp.singles) ? sp.singles : [];
+    const popularity = sp.popularity || null;
+    const fl = sp.followers || null;
+    const topTracks = Array.isArray(sp.topTracks) ? sp.topTracks : [];
     const vids = Array.isArray(yt.latestVideos) ? yt.latestVideos : [];
 
     return `
@@ -905,18 +901,31 @@
             <div class="plat-head"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.5c3.8-1.1 8.2-.8 11.8 1" stroke="#0B0B10" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M6.8 12.4c3.1-.8 6.7-.6 9.6.8" stroke="#0B0B10" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M7.6 15c2.2-.5 4.7-.4 6.8.5" stroke="#0B0B10" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> Spotify</div>
             <div class="plat-metrics">
               <div class="mc">
-                <div class="mc-k">Ouvintes mensais</div>
-                <div class="mc-v">${compact(ml.value)}</div>
-                <div class="mc-s">${delta(ml.weeklyDiffPercent) ? `7d ${delta(ml.weeklyDiffPercent)}` : ''}${delta(ml.monthlyDiffPercent) ? ` · 30d ${delta(ml.monthlyDiffPercent)}` : ''}&nbsp;</div>
+                <div class="mc-k">Popularidade</div>
+                <div class="mc-v">${popularity !== null ? `${popularity}/100` : '--'}</div>
+                <div class="mc-s">Métrica Spotify</div>
               </div>
               <div class="mc">
                 <div class="mc-k">Seguidores</div>
-                <div class="mc-v">${compact(fl.value)}</div>
-                <div class="mc-s">${delta(fl.weeklyDiffPercent) ? `7d ${delta(fl.weeklyDiffPercent)}` : ''}${delta(fl.monthlyDiffPercent) ? ` · 30d ${delta(fl.monthlyDiffPercent)}` : ''}&nbsp;</div>
+                <div class="mc-v">${compact(fl)}</div>
+                <div class="mc-s">Canal Spotify</div>
               </div>
             </div>
             <div class="media-list">
-              ${singles.length ? singles.map(singleRow).join('') : '<div class="empty">Sem singles recentes.</div>'}
+              ${topTracks.length ? topTracks.map(t => `
+                <div class="media-row">
+                  <a href="${esc(t.spotifyUrl || '#')}" target="_blank" rel="noopener" title="Abrir no Spotify">
+                    <img class="media-thumb" src="${esc(t.imageUrl || '')}" alt="${esc(t.title || 'Track')}" loading="lazy">
+                  </a>
+                  <div class="media-info">
+                    <div class="media-title"><a href="${esc(t.spotifyUrl || '#')}" target="_blank" rel="noopener">${esc(t.title || 'Track')}</a></div>
+                    <div class="media-date">${fmtDate(t.releaseDate) || 'sem data'}</div>
+                  </div>
+                  <div class="media-stat">
+                    <div class="media-num">${t.popularity || '--'}</div><div class="media-lbl">pop.</div>
+                  </div>
+                </div>
+              `).join('') : '<div class="empty">Sem top tracks.</div>'}
             </div>
           </div>
 
@@ -956,7 +965,7 @@
         <img src="${esc(item.imageUrl || '')}" alt="${esc(item.artistName || 'Artista')}" loading="lazy">
         <div class="rank-meta">
           <h4>${esc(item.artistName || 'Artista')}</h4>
-          <p>SP ${compact(item.monthlyListeners)} · YT ${compact(item.youtubeViews)}</p>
+          <p>SP ${item.spotifyPopularity} · YT ${compact(item.youtubeViews)}</p>
         </div>
       </div>
     `).join('');

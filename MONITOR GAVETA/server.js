@@ -11,7 +11,8 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 const {
-  CHARTMETRIC_REFRESH_TOKEN,
+  SPOTIFY_CLIENT_ID,
+  SPOTIFY_CLIENT_SECRET,
   YOUTUBE_API_KEY,
   PORT = 3000,
   MAX_ARTISTS_PER_REFRESH,
@@ -20,18 +21,14 @@ const {
   SUPABASE_ARTISTS_TABLE = 'artists_registry',
 } = process.env;
 
-const CM_HOST = 'https://api.chartmetric.com';
-let cmAccessToken = null;
-let cmAccessExpiresAt = 0;
+let spotifyAccessToken = null;
+let spotifyAccessExpiresAt = 0;
 
 const TTL = {
   dashboard: 24 * 60 * 60 * 1000,
-  cmArtistId: 7 * 24 * 60 * 60 * 1000,
-  artistMeta: 7 * 24 * 60 * 60 * 1000,
-  listenersFollowers: 24 * 60 * 60 * 1000,
-  artistAlbums: 7 * 24 * 60 * 60 * 1000,
-  albumTracks: 7 * 24 * 60 * 60 * 1000,
-  trackStreams: 7 * 24 * 60 * 60 * 1000,
+  artistData: 12 * 60 * 60 * 1000,
+  topTracks: 12 * 60 * 60 * 1000,
+  recentReleases: 12 * 60 * 60 * 1000,
   youtube: 6 * 60 * 60 * 1000,
 };
 
@@ -58,7 +55,6 @@ function normalizeArtistInput(raw = {}) {
   const youtubeUrl = String(raw.youtubeUrl || '').trim();
   const spotifyArtistId = extractSpotifyArtistId(spotifyUrl)
     || (isValidSpotifyArtistId(raw.spotifyArtistId) ? String(raw.spotifyArtistId).trim() : undefined);
-  const cmArtistId = Number(raw.cmArtistId || raw.chartmetricArtistId || 0) || undefined;
 
   if (!artistName || !spotifyArtistId) return null;
 
@@ -67,7 +63,6 @@ function normalizeArtistInput(raw = {}) {
     spotifyUrl,
     youtubeUrl,
     spotifyArtistId,
-    cmArtistId,
   };
 }
 
@@ -90,7 +85,6 @@ function fromSupabaseRow(row = {}) {
     spotifyUrl: row.spotify_url,
     youtubeUrl: row.youtube_url,
     spotifyArtistId: row.spotify_artist_id,
-    cmArtistId: row.cm_artist_id,
   });
 }
 
@@ -100,13 +94,12 @@ function toSupabaseRow(artist = {}) {
     spotify_url: artist.spotifyUrl,
     youtube_url: artist.youtubeUrl || null,
     spotify_artist_id: artist.spotifyArtistId,
-    cm_artist_id: artist.cmArtistId || null,
     updated_at: new Date().toISOString(),
   };
 }
 
 async function readArtistsStoreSupabase() {
-  const url = `${supabaseBaseUrl}${supabaseTablePath}?select=artist_name,spotify_url,youtube_url,spotify_artist_id,cm_artist_id,updated_at&order=updated_at.desc`;
+  const url = `${supabaseBaseUrl}${supabaseTablePath}?select=artist_name,spotify_url,youtube_url,spotify_artist_id,updated_at&order=updated_at.desc`;
   const res = await fetch(url, { headers: supabaseHeaders() });
   if (!res.ok) throw new Error(`Supabase GET ${res.status}: ${(await res.text()).slice(0, 260)}`);
 
@@ -262,172 +255,90 @@ function extractYouTubeChannelId(input = '') {
   return null;
 }
 
-async function getChartmetricAccessToken() {
-  if (!CHARTMETRIC_REFRESH_TOKEN) throw new Error('CHARTMETRIC_REFRESH_TOKEN ausente');
-  if (cmAccessToken && Date.now() < cmAccessExpiresAt - 60_000) return cmAccessToken;
+async function getSpotifyAccessToken() {
+  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
+    throw new Error('SPOTIFY_CLIENT_ID ou SPOTIFY_CLIENT_SECRET ausentes');
+  }
+  
+  if (spotifyAccessToken && Date.now() < spotifyAccessExpiresAt - 60_000) {
+    return spotifyAccessToken;
+  }
 
-  const res = await fetch(`${CM_HOST}/api/token`, {
+  const auth = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64');
+  const res = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshtoken: CHARTMETRIC_REFRESH_TOKEN }),
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
   });
 
-  if (!res.ok) throw new Error(`CM token ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  if (!res.ok) {
+    throw new Error(`Spotify token ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  }
+
   const data = await res.json();
-
-  cmAccessToken = data.token;
-  cmAccessExpiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
-  return cmAccessToken;
+  spotifyAccessToken = data.access_token;
+  spotifyAccessExpiresAt = Date.now() + (data.expires_in || 3600) * 1000;
+  return spotifyAccessToken;
 }
 
-async function chartmetricGet(path) {
-  const token = await getChartmetricAccessToken();
-  const res = await fetch(`${CM_HOST}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
+async function spotifyGet(path) {
+  const token = await getSpotifyAccessToken();
+  const res = await fetch(`https://api.spotify.com/v1${path}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error(`CM ${res.status}: ${(await res.text()).slice(0, 260)}`);
+
+  if (!res.ok) {
+    throw new Error(`Spotify ${res.status}: ${(await res.text()).slice(0, 260)}`);
+  }
+
   return res.json();
 }
 
-async function youtubeGet(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`YT ${res.status}: ${(await res.text()).slice(0, 260)}`);
-  return res.json();
-}
-
-async function getLatestChartmetricStat(cmArtistId, field) {
-  return remember(`cm:artist:${cmArtistId}:stat:${field}`, TTL.listenersFollowers, async () => {
-    const data = await chartmetricGet(`/api/artist/${cmArtistId}/stat/spotify?field=${field}&latest=true`);
-    const values = Array.isArray(data.obj?.[field]) ? data.obj[field] : [];
-    const latest = values[values.length - 1] || values[0] || null;
-    if (!latest) {
-      return {
-        value: null,
-        weeklyDiff: null,
-        weeklyDiffPercent: null,
-        monthlyDiff: null,
-        monthlyDiffPercent: null,
-        timestamp: null,
-      };
-    }
-
+async function getArtistData(spotifyArtistId) {
+  return remember(`spotify:artist:${spotifyArtistId}`, TTL.artistData, async () => {
+    const data = await spotifyGet(`/artists/${spotifyArtistId}`);
     return {
-      value: compactNumber(latest.value),
-      weeklyDiff: compactNumber(latest.weekly_diff),
-      weeklyDiffPercent: compactNumber(latest.weekly_diff_percent),
-      monthlyDiff: compactNumber(latest.monthly_diff),
-      monthlyDiffPercent: compactNumber(latest.monthly_diff_percent),
-      timestamp: latest.timestp || null,
+      name: data.name || null,
+      followers: compactNumber(data.followers?.total),
+      popularity: compactNumber(data.popularity),
+      imageUrl: data.images?.[0]?.url || null,
+      spotifyUrl: data.external_urls?.spotify || null,
     };
   });
 }
 
-async function getArtistMeta(cmArtistId) {
-  return remember(`cm:artist:${cmArtistId}:meta`, TTL.artistMeta, async () => {
-    try {
-      return (await chartmetricGet(`/api/artist/${cmArtistId}`)).obj || {};
-    } catch {
-      return {};
-    }
+async function getTopTracks(spotifyArtistId) {
+  return remember(`spotify:artist:${spotifyArtistId}:top-tracks`, TTL.topTracks, async () => {
+    const data = await spotifyGet(`/artists/${spotifyArtistId}/top-tracks?market=BR`);
+    const tracks = (data.tracks || []).slice(0, 3);
+    
+    return tracks.map(track => ({
+      title: track.name || 'Track',
+      spotifyUrl: track.external_urls?.spotify || null,
+      popularity: compactNumber(track.popularity),
+      imageUrl: track.album?.images?.[0]?.url || null,
+      releaseDate: track.album?.release_date || null,
+    }));
   });
 }
 
-async function getChartmetricArtistIdFromSpotify(spotifyArtistId) {
-  return remember(`cm:map:spotify:${spotifyArtistId}`, TTL.cmArtistId, async () => {
-    const data = await chartmetricGet(`/api/artist/spotify/${encodeURIComponent(spotifyArtistId)}/get-ids`);
-    const obj = Array.isArray(data.obj) ? data.obj : [];
-    const match = obj.find(x => x.cm_artist) || null;
-    return match ? Number(match.cm_artist) : null;
-  });
-}
-
-async function getArtistAlbums(cmArtistId) {
-  return remember(`cm:artist:${cmArtistId}:albums`, TTL.artistAlbums, async () => {
-    const albumsData = await chartmetricGet(
-      `/api/artist/${cmArtistId}/albums?sortColumn=release_date&sortOrderDesc=true&isPrimary=true&limit=30`
-    );
-    return Array.isArray(albumsData.obj) ? albumsData.obj : [];
-  });
-}
-
-async function getAlbumTracks(cmAlbumId) {
-  return remember(`cm:album:${cmAlbumId}:tracks`, TTL.albumTracks, async () => {
-    const tracksData = await chartmetricGet(`/api/album/${cmAlbumId}/tracks`);
-    return Array.isArray(tracksData.obj) ? tracksData.obj : [];
-  });
-}
-
-async function getTrackSpotifyStreams(cmTrackId, spotifyTrackId = null) {
-  const attempts = [];
-  if (cmTrackId) {
-    attempts.push(`/api/track/${cmTrackId}/spotify/stats/highest-playcounts?type=streams&latest=true`);
-    attempts.push(`/api/track/${cmTrackId}/spotify/stats/most-history?type=streams&latest=true`);
-  }
-  if (spotifyTrackId) {
-    attempts.push(`/api/track/${encodeURIComponent(spotifyTrackId)}/spotify/stats/highest-playcounts?type=streams&latest=true&isDomainId=true`);
-    attempts.push(`/api/track/${encodeURIComponent(spotifyTrackId)}/spotify/stats/most-history?type=streams&latest=true&isDomainId=true`);
-  }
-
-  for (const path of attempts) {
-    try {
-      const data = await chartmetricGet(path);
-      const rows = Array.isArray(data.obj) ? data.obj : [];
-      for (const row of rows) {
-        const points = Array.isArray(row.data) ? row.data : [];
-        const latest = points[points.length - 1] || points[0];
-        if (latest?.value != null) return compactNumber(latest.value);
-      }
-    } catch {
-      // tenta próxima rota
-    }
-  }
-  return null;
-}
-
-async function getRecentSingles(cmArtistId, spotifyArtistId) {
-  const albums = await getArtistAlbums(cmArtistId);
-  const singles = albums.filter(a => Number(a.num_track) === 1).slice(0, 3);
-
-  const results = [];
-  for (const album of singles) {
-    let trackName = album.name || 'Single';
-    let coverUrl = album.image_url || null;
-    let plays = null;
-    let spotifyTrackId = null;
-    let cmTrackId = null;
-
-    try {
-      const tracks = await getAlbumTracks(album.cm_album);
-      const first = tracks[0];
-      if (first) {
-        trackName = first.name || trackName;
-        coverUrl = first.image_url || coverUrl;
-        cmTrackId = first.cm_track || null;
-        if (Array.isArray(first.spotify_track_ids) && first.spotify_track_ids.length) {
-          spotifyTrackId = first.spotify_track_ids[0];
-        }
-
-        plays = await getTrackSpotifyStreams(cmTrackId, spotifyTrackId);
-      }
-    } catch {
-      // Mantem os dados do album se track falhar.
-    }
-
-    results.push({
-      cmAlbum: album.cm_album,
-      cmTrack: cmTrackId,
-      spotifyTrackId,
-      spotifyUrl: spotifyTrackId
-        ? `https://open.spotify.com/track/${spotifyTrackId}`
-        : `https://open.spotify.com/artist/${spotifyArtistId}`,
+async function getRecentReleases(spotifyArtistId) {
+  return remember(`spotify:artist:${spotifyArtistId}:releases`, TTL.recentReleases, async () => {
+    const data = await spotifyGet(`/artists/${spotifyArtistId}/albums?limit=10&include_groups=album,single`);
+    const items = (data.items || []).slice(0, 3);
+    
+    return items.map(album => ({
+      title: album.name || 'Album',
+      spotifyUrl: album.external_urls?.spotify || null,
       releaseDate: album.release_date || null,
-      title: trackName,
-      coverUrl,
-      plays,
-    });
-  }
-
-  return results;
+      imageUrl: album.images?.[0]?.url || null,
+      type: album.album_type || 'album',
+      popularity: compactNumber(album.popularity),
+    }));
+  });
 }
 
 async function getYouTubeChannelBundle(channelUrl) {
@@ -514,10 +425,10 @@ async function getYouTubeChannelBundle(channelUrl) {
 
 function computePriority(artist) {
   let score = 0;
-  score += Number(artist.spotify?.monthlyListeners?.value || 0) / 100000;
+  score += Number(artist.spotify?.popularity || 0) / 100;
   score += Number(artist.youtube?.channelViews || 0) / 10000000;
-  score += Number(artist.spotify?.followers?.value || 0) / 200000;
-  score += Number(artist.spotify?.singles?.[0]?.plays || 0) / 1000000;
+  score += Number(artist.spotify?.followers || 0) / 200000;
+  score += Number(artist.spotify?.topTracks?.[0]?.popularity || 0) / 100;
   score += Number(artist.youtube?.latestVideos?.[0]?.views || 0) / 1000000;
   return score;
 }
@@ -537,10 +448,10 @@ app.get('/', (_req, res) => {
 
 app.get('/api/health', async (_req, res) => {
   try {
-    await getChartmetricAccessToken();
+    await getSpotifyAccessToken();
     res.json({
       ok: true,
-      chartmetric: true,
+      spotify: true,
       youtubeConfigured: Boolean(YOUTUBE_API_KEY),
       cacheEntries: cache.size,
       artistsStorage: supabaseEnabled ? 'supabase' : 'local-file',
@@ -595,29 +506,15 @@ app.post('/api/dashboard', async (req, res) => {
       const spotifyArtistId = extractSpotifyArtistId(spotifyUrl)
         || (isValidSpotifyArtistId(raw.spotifyArtistId) ? String(raw.spotifyArtistId).trim() : null);
 
-      const rawCmArtistId = Number(raw.cmArtistId || raw.chartmetricArtistId || 0);
-      let cmArtistId = Number.isFinite(rawCmArtistId) && rawCmArtistId > 0 ? rawCmArtistId : null;
-
       if (!artistName || !spotifyArtistId) {
-        return { artistName: artistName || 'Sem nome', error: 'Nome e link do Spotify sao obrigatorios.', spotifyArtistId };
+        return { artistName: artistName || 'Sem nome', error: 'Nome e link do Spotify são obrigatórios.', spotifyArtistId };
       }
 
       try {
-        if (!cmArtistId) {
-          cmArtistId = await getChartmetricArtistIdFromSpotify(spotifyArtistId);
-        } else {
-          cacheSet(`cm:map:spotify:${spotifyArtistId}`, cmArtistId, TTL.cmArtistId);
-        }
-
-        if (!cmArtistId) {
-          return { artistName, spotifyArtistId, error: 'Artista não encontrado.' };
-        }
-
-        const [meta, listeners, followers, singles, youtube] = await Promise.all([
-          getArtistMeta(cmArtistId),
-          getLatestChartmetricStat(cmArtistId, 'listeners'),
-          getLatestChartmetricStat(cmArtistId, 'followers'),
-          getRecentSingles(cmArtistId, spotifyArtistId),
+        const [artistData, topTracks, recentReleases, youtube] = await Promise.all([
+          getArtistData(spotifyArtistId),
+          getTopTracks(spotifyArtistId),
+          getRecentReleases(spotifyArtistId),
           getYouTubeChannelBundle(youtubeUrl),
         ]);
 
@@ -625,10 +522,14 @@ app.post('/api/dashboard', async (req, res) => {
           artistName,
           spotifyArtistId,
           spotifyArtistUrl: `https://open.spotify.com/artist/${spotifyArtistId}`,
-          chartmetricArtistId: cmArtistId,
           fetchedAt: new Date().toISOString(),
-          imageUrl: meta.image_url || meta.image || youtube.thumbnail || null,
-          spotify: { monthlyListeners: listeners, followers, singles },
+          imageUrl: artistData.imageUrl || youtube.thumbnail || null,
+          spotify: { 
+            popularity: artistData.popularity, 
+            followers: artistData.followers, 
+            topTracks,
+            recentReleases,
+          },
           youtube: {
             channelTitle: youtube.title,
             channelThumbnail: youtube.thumbnail,
@@ -648,7 +549,7 @@ app.post('/api/dashboard', async (req, res) => {
       .map(artist => ({
         artistName: artist.artistName,
         imageUrl: artist.imageUrl,
-        monthlyListeners: artist.spotify?.monthlyListeners?.value || 0,
+        spotifyPopularity: artist.spotify?.popularity || 0,
         youtubeViews: artist.youtube?.channelViews || 0,
         priorityScore: computePriority(artist),
       }))
