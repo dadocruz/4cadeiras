@@ -341,6 +341,12 @@ async function getRecentReleases(spotifyArtistId) {
   });
 }
 
+async function youtubeGet(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`YT ${res.status}: ${(await res.text()).slice(0, 260)}`);
+  return res.json();
+}
+
 async function getYouTubeChannelBundle(channelUrl) {
   const channelId = extractYouTubeChannelId(channelUrl);
   const empty = { channelId: null, title: null, thumbnail: null, subscribers: null, views: null, latestVideos: [] };
