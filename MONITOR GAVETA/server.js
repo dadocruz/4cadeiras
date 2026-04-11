@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 const {
   SPOTIFY_CLIENT_ID,
@@ -20,6 +20,9 @@ const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_ARTISTS_TABLE = 'artists_registry',
+  GAVETA_APPS_SCRIPT_URL,
+  GAVETA_CALENDAR_ID = '054ef9390875ee8d2eafa8c85b0d6f3f76701f5aa907a1685ff7a005a12f8ebb@group.calendar.google.com',
+  GAVETA_DRIVE_FOLDER_ID,
 } = process.env;
 
 let spotifyAccessToken = null;
@@ -38,10 +41,75 @@ const cache = new Map();
 const inflight = new Map();
 const DATA_DIR = path.join(__dirname, 'data');
 const ARTISTS_STORE_PATH = path.join(DATA_DIR, 'artists.json');
+const GAVETA_REQUESTS_STORE_PATH = path.join(DATA_DIR, 'gaveta-requests.json');
+const GAVETA_APPS_SCRIPT_FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbyDTL4Dj32cUmr0ee2VNtRZlIZlV8bJV4x2uOgortI7mvWSDvkHo3BAhPsYhOtb9n3b/exec';
 let artistsWriteQueue = Promise.resolve();
+let gavetaRequestsWriteQueue = Promise.resolve();
 const supabaseEnabled = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 const supabaseBaseUrl = SUPABASE_URL ? SUPABASE_URL.replace(/\/$/, '') : '';
 const supabaseTablePath = `/rest/v1/${encodeURIComponent(SUPABASE_ARTISTS_TABLE)}`;
+const gavetaAppsScriptUrl = String(GAVETA_APPS_SCRIPT_URL || GAVETA_APPS_SCRIPT_FALLBACK_URL).trim();
+
+function gavetaTaskSignature(task = {}) {
+  return [task.type || '', task.artistName || '', task.itemTitle || '', Number(task.milestone || 0)]
+    .join('|')
+    .toLowerCase();
+}
+
+async function readGavetaRequestsStore() {
+  try {
+    const raw = await fs.readFile(GAVETA_REQUESTS_STORE_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed?.items) ? parsed.items : [];
+    return {
+      items,
+      updatedAt: parsed?.updatedAt || null,
+    };
+  } catch {
+    return { items: [], updatedAt: null };
+  }
+}
+
+function writeGavetaRequestsStoreQueued(items = []) {
+  gavetaRequestsWriteQueue = gavetaRequestsWriteQueue
+    .catch(() => null)
+    .then(async () => {
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        items,
+      };
+      await fs.writeFile(GAVETA_REQUESTS_STORE_PATH, JSON.stringify(payload, null, 2), 'utf8');
+      return payload;
+    });
+  return gavetaRequestsWriteQueue;
+}
+
+async function postToGavetaAppsScript(payload) {
+  if (!gavetaAppsScriptUrl) {
+    throw new Error('GAVETA_APPS_SCRIPT_URL ausente no backend.');
+  }
+
+  const res = await fetch(gavetaAppsScriptUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  let data = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { ok: false, error: text };
+  }
+
+  if (!res.ok || !data?.ok) {
+    throw new Error(data?.error || `Apps Script erro ${res.status}`);
+  }
+
+  return data;
+}
 
 function supabaseHeaders(extra = {}) {
   return {
@@ -874,6 +942,140 @@ app.post('/api/dashboard', async (req, res) => {
     };
     cacheSet(key, payload, TTL.dashboard);
     return res.json(payload);
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get('/api/gaveta/requests', async (_req, res) => {
+  try {
+    const store = await readGavetaRequestsStore();
+    const items = [...store.items].sort((a, b) =>
+      String(b.requestedAt || '').localeCompare(String(a.requestedAt || ''))
+    );
+    return res.json({ ok: true, requests: items, updatedAt: store.updatedAt });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post('/api/gaveta/requests', async (req, res) => {
+  try {
+    const task = req.body?.task || {};
+    const artistName = String(task.artistName || '').trim();
+    const itemTitle = String(task.itemTitle || '').trim();
+    const type = String(task.type || 'manual').trim();
+    const signature = gavetaTaskSignature(task);
+    if (!artistName || !itemTitle || !signature) {
+      return res.status(400).json({ ok: false, error: 'artistName e itemTitle sao obrigatorios.' });
+    }
+
+    const store = await readGavetaRequestsStore();
+    const existing = store.items.find(item => item.signature === signature && item.status !== 'done');
+    if (existing) {
+      return res.json({ ok: true, request: existing, duplicated: true });
+    }
+
+    const dueDate = String(req.body?.dueDate || '').trim() || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const priority = task.demandStatus === 'do' ? 'alta' : 'media';
+    let calendarEventId = '';
+    let upstreamTaskId = '';
+    let calendarError = '';
+
+    try {
+      const created = await postToGavetaAppsScript({
+        action: 'createTask',
+        artist: artistName,
+        title: itemTitle,
+        description: String(task.metricLabel || 'Solicitacao de arte pelo painel'),
+        priority,
+        dueDate,
+        createCalendar: true,
+        calendarId: String(GAVETA_CALENDAR_ID || '').trim(),
+        driveLink: String(task.driveUrl || '').trim(),
+      });
+      calendarEventId = String(created?.task?.calendarEventId || '');
+      upstreamTaskId = String(created?.task?.id || '');
+    } catch (err) {
+      calendarError = String(err.message || err);
+    }
+
+    const requestItem = {
+      id: String(Date.now()),
+      taskId: String(task.id || ''),
+      upstreamTaskId,
+      signature,
+      type,
+      artistName,
+      itemTitle,
+      metricLabel: String(task.metricLabel || ''),
+      currentValue: Number(task.currentValue || 0),
+      milestone: Number(task.milestone || 0),
+      sourceUrl: String(task.sourceUrl || ''),
+      coverUrl: String(task.coverUrl || ''),
+      status: 'requested',
+      requestedAt: new Date().toISOString(),
+      dueDate,
+      calendarEventId,
+      calendarError,
+    };
+
+    const nextItems = [...store.items, requestItem].slice(-2000);
+    await writeGavetaRequestsStoreQueued(nextItems);
+    return res.json({ ok: true, request: requestItem });
+  } catch (error) {
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post('/api/gaveta/upload', async (req, res) => {
+  try {
+    const taskId = String(req.body?.taskId || '').trim();
+    const artistName = String(req.body?.artistName || '').trim();
+    const itemTitle = String(req.body?.itemTitle || '').trim();
+    const files = Array.isArray(req.body?.files) ? req.body.files : [];
+    const folderId = String(req.body?.folderId || GAVETA_DRIVE_FOLDER_ID || '').trim();
+
+    if (!taskId || !artistName || !itemTitle) {
+      return res.status(400).json({ ok: false, error: 'taskId, artistName e itemTitle sao obrigatorios.' });
+    }
+    if (!files.length) {
+      return res.status(400).json({ ok: false, error: 'Nenhum arquivo enviado.' });
+    }
+
+    const uploaded = [];
+    for (const file of files.slice(0, 6)) {
+      const name = String(file?.name || 'arquivo').trim();
+      const dataUrl = String(file?.dataUrl || '');
+      const mime = String(file?.mime || 'application/octet-stream');
+      if (!dataUrl.startsWith('data:')) continue;
+
+      const response = await postToGavetaAppsScript({
+        action: 'uploadGavetaAsset',
+        taskId,
+        artist: artistName,
+        title: itemTitle,
+        fileName: name,
+        mimeType: mime,
+        dataUrl,
+        folderId,
+      });
+
+      uploaded.push({
+        name,
+        mime,
+        driveUrl: response?.file?.driveUrl || response?.file?.webViewLink || '',
+        webViewLink: response?.file?.webViewLink || response?.file?.driveUrl || '',
+        downloadUrl: response?.file?.downloadUrl || '',
+        driveFileId: response?.file?.driveFileId || '',
+      });
+    }
+
+    if (!uploaded.length) {
+      return res.status(502).json({ ok: false, error: 'Falha no upload para o Drive. Verifique Apps Script e pasta.' });
+    }
+
+    return res.json({ ok: true, uploaded });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
