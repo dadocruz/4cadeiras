@@ -122,6 +122,16 @@
     .media-lbl{font-size:9px;color:var(--soft);margin-top:2px}
     .no-data{font-size:10px;color:var(--soft);font-style:italic}
     .traffic-tag{display:inline-block;background:rgba(255,107,0,.18);border:1px solid rgba(255,107,0,.4);color:#ff9a50;font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;margin-top:3px;letter-spacing:.06em}
+    .art-task{padding:11px 12px;border-top:1px solid var(--line);display:grid;gap:8px}
+    .art-task-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .art-task-title{font-size:12px;font-weight:700;line-height:1.3}
+    .art-task-meta{font-size:10px;color:var(--muted)}
+    .art-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .status-pill{font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.05)}
+    .status-pending{color:#ffcf80;border-color:rgba(255,207,128,.45)}
+    .status-progress{color:#8cc8ff;border-color:rgba(140,200,255,.45)}
+    .status-ready{color:#86efac;border-color:rgba(134,239,172,.45)}
+    .status-done{color:#d1d5db;border-color:rgba(209,213,219,.45)}
 
     .ranking{position:sticky;top:88px}
     .ranking .inner{padding:16px}
@@ -188,6 +198,7 @@
     <div class="brand">
       <div class="mark">D</div>
       <div>
+      <button class="btn dark" id="artBtn">Artes <span id="artPendingCount">0</span></button>
         <h1>Monitoramento dos artistas</h1>
         <p>Spotify e YouTube para decisão rápida de arte e tráfego.</p>
       </div>
@@ -201,6 +212,13 @@
       <button class="btn dark" id="exportBtn">Exportar lista</button>
       <button class="btn dark" id="importBtn">Importar lista</button>
       <button class="btn dark" id="manageBtn">Artistas</button>
+      <div id="artMilestonesSection" class="traffic-section hidden">
+        <div class="traffic-head">
+          <h2>Artes para produzir</h2>
+          <span class="traffic-badge" id="artMilestonesCount">0</span>
+        </div>
+        <div id="artMilestonesList"></div>
+      </div>
       <button class="btn red" id="addBtn">+ Cadastrar</button>
       <input id="importInput" type="file" accept="application/json" class="hidden" />
     </div>
@@ -242,6 +260,7 @@
   </div>
   <div class="menu-drawer-body">
     <button class="btn dark" id="menuRefreshBtn">Atualizar agora</button>
+    <button class="btn dark" id="menuArtBtn">🎨 Artes</button>
     <button class="btn dark" id="menuExportBtn">Exportar lista</button>
     <button class="btn dark" id="menuImportBtn">Importar lista</button>
     <button class="btn dark" id="menuManageBtn">Artistas</button>
@@ -249,6 +268,26 @@
   </div>
   <div class="menu-drawer-footer">
     <button class="btn dark" id="menuCloseBtn">Fechar</button>
+  </div>
+</aside>
+
+<aside class="drawer hidden" id="artDrawer">
+  <div class="drawer-head">
+    <h3>Gestão de Artes</h3>
+    <p>Controle de entregas por metas: singles, ouvintes mensais e vídeos.</p>
+  </div>
+  <div class="drawer-body">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn dark sm" id="artTabPending">Pendentes</button>
+      <button class="btn dark sm" id="artTabProgress">Em andamento</button>
+      <button class="btn dark sm" id="artTabReady">Prontas</button>
+      <button class="btn dark sm" id="artTabDone">Entregues</button>
+      <button class="btn red sm" id="artAddManualBtn">+ Arte manual</button>
+    </div>
+    <div id="artTasksList" class="media-list"></div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn dark" id="closeArt">Fechar</button>
   </div>
 </aside>
 
@@ -295,6 +334,7 @@
   const CLOUD_SYNC_BOOTSTRAP_KEY = 'gaveta-radar-v5-cloud-bootstrap';
   const FULL_REFRESH_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
   const LAST_FULL_REFRESH_KEY = 'gaveta-radar-v5-last-full-refresh';
+  const ART_TASKS_KEY = 'gaveta-radar-v5-art-tasks';
 
   function initialBackendUrl() {
     const forced = new URLSearchParams(window.location.search).get('api');
@@ -352,14 +392,30 @@
   const menuDrawer = qs('menuDrawer');
   const menuBackdrop = qs('menuBackdrop');
   const menuRefreshBtn = qs('menuRefreshBtn');
+  const menuArtBtn = qs('menuArtBtn');
   const menuExportBtn = qs('menuExportBtn');
   const menuImportBtn = qs('menuImportBtn');
   const menuManageBtn = qs('menuManageBtn');
   const menuAddBtn = qs('menuAddBtn');
   const menuCloseBtn = qs('menuCloseBtn');
+  const artBtn = qs('artBtn');
+  const artDrawer = qs('artDrawer');
+  const closeArtBtn = qs('closeArt');
+  const artPendingCount = qs('artPendingCount');
+  const artMilestonesSection = qs('artMilestonesSection');
+  const artMilestonesCount = qs('artMilestonesCount');
+  const artMilestonesList = qs('artMilestonesList');
+  const artTasksList = qs('artTasksList');
+  const artTabPending = qs('artTabPending');
+  const artTabProgress = qs('artTabProgress');
+  const artTabReady = qs('artTabReady');
+  const artTabDone = qs('artTabDone');
+  const artAddManualBtn = qs('artAddManualBtn');
   const formError = qs('formError');
   const refreshBtn = qs('refreshBtn');
   let artistsCloudSyncQueue = Promise.resolve();
+  let artTasks = [];
+  let artActiveTab = 'pending';
 
   function getLastFullRefresh() {
     return Number(localStorage.getItem(LAST_FULL_REFRESH_KEY) || 0);
@@ -645,6 +701,7 @@
     qs('artistGrid').innerHTML = (data.artists || []).map(artistCard).join('');
     renderRanking(data.ranking || []);
     renderTrafficAlerts(data.trafficAlerts || []);
+    updateArtTasksFromArtists(data.artists || []);
   }
 
   function saveArtists(data, options = {}) {
@@ -758,10 +815,227 @@
     return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('pt-BR');
   }
 
+  function loadArtTasks() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ART_TASKS_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveArtTasks() {
+    localStorage.setItem(ART_TASKS_KEY, JSON.stringify(artTasks));
+    renderArtIndicators();
+    renderArtMilestones();
+    renderArtTasks();
+  }
+
+  function monthlyStep(value) {
+    const n = Number(value || 0);
+    if (n < 50000) return 5000;
+    if (n < 500000) return 50000;
+    return 100000;
+  }
+
+  function reachedMilestone(value, step) {
+    const n = Number(value || 0);
+    if (!step || n < step) return null;
+    return Math.floor(n / step) * step;
+  }
+
+  function taskSignature(task) {
+    return [task.type, task.artistName, task.itemTitle || '', task.milestone || 0].join('|').toLowerCase();
+  }
+
+  function ensureAutoTask(task) {
+    const sig = taskSignature(task);
+    const exists = artTasks.some(t => t.signature === sig);
+    if (exists) return;
+    artTasks.push({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      signature: sig,
+      status: 'pending',
+      note: '',
+      assetDataUrl: '',
+      assetName: '',
+      createdAt: new Date().toISOString(),
+      ...task,
+    });
+  }
+
+  function updateArtTasksFromArtists(artists) {
+    (artists || []).filter(a => a && !a.error).forEach(artist => {
+      const artistName = artist.artistName || 'Artista';
+      const ml = Number(artist?.spotify?.monthlyListeners?.value || 0);
+      const mlStep = monthlyStep(ml);
+      const mlTarget = reachedMilestone(ml, mlStep);
+      if (mlTarget && mlTarget >= 5000) {
+        ensureAutoTask({
+          type: 'monthly',
+          artistName,
+          itemTitle: 'Ouvintes mensais',
+          currentValue: ml,
+          milestone: mlTarget,
+          metricLabel: 'Spotify mensal',
+        });
+      }
+
+      (artist?.spotify?.singles || []).forEach(single => {
+        const plays = Number(single?.plays || 0);
+        const target = reachedMilestone(plays, 50000);
+        if (!target) return;
+        ensureAutoTask({
+          type: 'single',
+          artistName,
+          itemTitle: single?.title || 'Single',
+          currentValue: plays,
+          milestone: target,
+          metricLabel: 'Plays do single',
+        });
+      });
+
+      (artist?.youtube?.latestVideos || []).forEach(video => {
+        const views = Number(video?.views || 0);
+        const target = reachedMilestone(views, 50000);
+        if (!target) return;
+        ensureAutoTask({
+          type: 'youtube',
+          artistName,
+          itemTitle: video?.title || 'Video YouTube',
+          currentValue: views,
+          milestone: target,
+          metricLabel: 'Views do video',
+        });
+      });
+    });
+    saveArtTasks();
+  }
+
+  function statusLabel(status) {
+    if (status === 'pending') return 'Pendente';
+    if (status === 'progress') return 'Em andamento';
+    if (status === 'ready') return 'Pronta';
+    return 'Entregue';
+  }
+
+  function nextStatus(status) {
+    if (status === 'pending') return 'progress';
+    if (status === 'progress') return 'ready';
+    if (status === 'ready') return 'done';
+    return 'pending';
+  }
+
+  function renderArtIndicators() {
+    const pending = artTasks.filter(t => t.status === 'pending' || t.status === 'progress').length;
+    artPendingCount.textContent = String(pending);
+  }
+
+  function renderArtMilestones() {
+    const pending = artTasks.filter(t => t.status === 'pending' || t.status === 'progress');
+    if (!pending.length) {
+      artMilestonesSection.classList.add('hidden');
+      return;
+    }
+
+    artMilestonesSection.classList.remove('hidden');
+    artMilestonesCount.textContent = String(pending.length);
+    artMilestonesList.innerHTML = pending.slice(0, 12).map(task => `
+      <button class="traffic-card" data-open-art="${esc(task.id)}" style="text-align:left;width:100%;background:rgba(118,73,255,.08);border-color:rgba(147,104,255,.4)">
+        <div class="traffic-info" style="grid-column:1/-1">
+          <div class="traffic-artist">${esc(task.artistName)}</div>
+          <div class="traffic-title">${esc(task.itemTitle)} · meta ${compact(task.milestone)}</div>
+          <div class="traffic-meta">${esc(task.metricLabel)} · atual ${compact(task.currentValue)}</div>
+        </div>
+      </button>
+    `).join('');
+
+    artMilestonesList.querySelectorAll('[data-open-art]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        artActiveTab = 'pending';
+        openDrawer(artDrawer);
+        renderArtTasks();
+      });
+    });
+  }
+
+  function renderArtTasks() {
+    const filtered = artTasks.filter(t => t.status === artActiveTab);
+    if (!filtered.length) {
+      artTasksList.innerHTML = '<div class="empty">Nenhuma arte nesta coluna.</div>';
+      return;
+    }
+
+    artTasksList.innerHTML = filtered.map(task => `
+      <div class="art-task">
+        <div class="art-task-head">
+          <div>
+            <div class="art-task-title">${esc(task.artistName)} · ${esc(task.itemTitle)}</div>
+            <div class="art-task-meta">${esc(task.metricLabel)} · meta ${compact(task.milestone)} · atual ${compact(task.currentValue)}</div>
+          </div>
+          <button class="status-pill status-${esc(task.status)}" data-status="${esc(task.id)}">${statusLabel(task.status)}</button>
+        </div>
+        <div class="art-row">
+          <input type="file" accept="image/*" data-upload="${esc(task.id)}">
+          ${task.assetDataUrl ? `<a class="btn dark sm" href="${esc(task.assetDataUrl)}" download="${esc(task.assetName || 'arte.png')}">Baixar arte</a>` : ''}
+          <button class="btn dark sm" data-delete="${esc(task.id)}">Excluir</button>
+        </div>
+        <textarea class="input" rows="2" data-note="${esc(task.id)}" placeholder="Observacoes">${esc(task.note || '')}</textarea>
+      </div>
+    `).join('');
+
+    artTasksList.querySelectorAll('[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-status');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        task.status = nextStatus(task.status);
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete');
+        artTasks = artTasks.filter(t => t.id !== id);
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-note]').forEach(field => {
+      field.addEventListener('change', () => {
+        const id = field.getAttribute('data-note');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        task.note = field.value;
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-upload]').forEach(input => {
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        const id = input.getAttribute('data-upload');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        const dataUrl = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+        task.assetDataUrl = String(dataUrl || '');
+        task.assetName = file.name;
+        saveArtTasks();
+      });
+    });
+  }
+
   function openDrawer(w) {
     backdrop.classList.remove('hidden');
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
+    artDrawer.classList.add('hidden');
     w.classList.remove('hidden');
   }
 
@@ -769,6 +1043,7 @@
     backdrop.classList.add('hidden');
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
+    artDrawer.classList.add('hidden');
     formError.classList.add('hidden');
     formError.textContent = '';
   }
@@ -1071,6 +1346,7 @@
   }
 
   qs('addBtn').addEventListener('click', () => openDrawer(addDrawer));
+  artBtn.addEventListener('click', () => openDrawer(artDrawer));
   qs('refreshBtn').addEventListener('click', () => {
     if (!confirmFullRefresh()) return;
     loadDashboard({ forceRefresh: true });
@@ -1078,8 +1354,31 @@
   qs('manageBtn').addEventListener('click', () => openDrawer(manageDrawer));
   qs('closeAdd').addEventListener('click', closeDrawers);
   qs('closeManage').addEventListener('click', closeDrawers);
+  closeArtBtn.addEventListener('click', closeDrawers);
   backdrop.addEventListener('click', closeDrawers);
   qs('saveArtist').addEventListener('click', saveArtist);
+
+  artTabPending.addEventListener('click', () => { artActiveTab = 'pending'; renderArtTasks(); });
+  artTabProgress.addEventListener('click', () => { artActiveTab = 'progress'; renderArtTasks(); });
+  artTabReady.addEventListener('click', () => { artActiveTab = 'ready'; renderArtTasks(); });
+  artTabDone.addEventListener('click', () => { artActiveTab = 'done'; renderArtTasks(); });
+
+  artAddManualBtn.addEventListener('click', () => {
+    const artistName = window.prompt('Nome do artista');
+    if (!artistName) return;
+    const itemTitle = window.prompt('Titulo da arte (ex: Single X 100k)');
+    if (!itemTitle) return;
+    ensureAutoTask({
+      type: 'manual',
+      artistName,
+      itemTitle,
+      currentValue: 0,
+      milestone: 0,
+      metricLabel: 'Arte manual',
+    });
+    saveArtTasks();
+    openDrawer(artDrawer);
+  });
 
   qs('exportBtn').addEventListener('click', exportArtists);
   qs('importBtn').addEventListener('click', () => qs('importInput').click());
@@ -1117,6 +1416,7 @@
   menuCloseBtn.addEventListener('click', closeMenuDrawer);
   menuAddBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(addDrawer); });
   menuManageBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(manageDrawer); });
+  menuArtBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(artDrawer); });
   menuRefreshBtn.addEventListener('click', () => { closeMenuDrawer(); if (confirmFullRefresh()) loadDashboard({ forceRefresh: true }); });
   menuExportBtn.addEventListener('click', () => { closeMenuDrawer(); exportArtists(); });
   menuImportBtn.addEventListener('click', () => { closeMenuDrawer(); qs('importInput').click(); });
@@ -1125,6 +1425,11 @@
   updateRefreshButtonState();
 
   (async () => {
+    artTasks = loadArtTasks();
+    renderArtIndicators();
+    renderArtMilestones();
+    renderArtTasks();
+
     const bootstrapped = localStorage.getItem(CLOUD_SYNC_BOOTSTRAP_KEY) === '1';
     if (!bootstrapped || getArtists().length === 0) {
       await bootstrapArtistsFromCloud();
