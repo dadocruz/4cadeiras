@@ -303,7 +303,7 @@
       <button class="btn dark sm" id="artTabReady">Prontas</button>
       <button class="btn dark sm" id="artTabDone">Entregues</button>
       <button class="btn red sm" id="artAddManualBtn">+ Arte manual</button>
-      <button class="btn dark sm" id="resetRequestsBtn">Zerar solicitações</button>
+      <button class="btn dark sm" id="resetRequestsBtn">Zerar item selecionado</button>
     </div>
     <div class="flow-row" style="margin-top:10px">
       <span class="status-pill status-pending">Solicitada</span>
@@ -424,6 +424,14 @@
 
   async function clearGavetaRequests() {
     return fetchBackendJson('/api/gaveta/requests', {
+      method: 'DELETE',
+    });
+  }
+
+  async function clearGavetaRequestBySignature(signature) {
+    const s = String(signature || '').trim();
+    if (!s) throw new Error('Assinatura da solicitacao ausente.');
+    return fetchBackendJson(`/api/gaveta/requests?signature=${encodeURIComponent(s)}`, {
       method: 'DELETE',
     });
   }
@@ -663,6 +671,23 @@
     });
 
     return local || remote;
+  }
+
+  function refreshQuickRequestButtonsInGrid() {
+    const grid = qs('artistGrid');
+    if (!grid) return;
+    grid.querySelectorAll('[data-quick-request]').forEach(btn => {
+      const type = btn.getAttribute('data-type') || 'manual';
+      const artist = btn.getAttribute('data-artist') || '';
+      const title = btn.getAttribute('data-title') || '';
+      const milestone = Number(btn.getAttribute('data-milestone') || 0);
+      const source = btn.getAttribute('data-source') || '';
+      const requested = hasRequestedSignature(type, artist, title, milestone, source);
+      btn.disabled = requested;
+      btn.textContent = requested ? 'Pedido enviado' : 'Pedir arte';
+      btn.classList.toggle('requested', requested);
+      btn.classList.toggle('dark', !requested);
+    });
   }
 
   function getLastFullRefresh() {
@@ -947,6 +972,7 @@
 
   function renderDashboardPayload(data) {
     qs('artistGrid').innerHTML = (data.artists || []).map(artistCard).join('');
+    refreshQuickRequestButtonsInGrid();
     renderArtForecast();
     renderTrafficAlerts(data.trafficAlerts || []);
     updateArtTasksFromArtists(data.artists || []);
@@ -1168,6 +1194,7 @@
   function saveArtTasks() {
     localStorage.setItem(ART_TASKS_KEY, JSON.stringify(artTasks));
     renderArtIndicators();
+    refreshQuickRequestButtonsInGrid();
     renderArtForecast();
     renderArtTasks();
     renderGavetaRequests();
@@ -1499,7 +1526,7 @@
           <span class="status-pill status-${esc(task.status)}">${statusLabel(task.status)}</span>
         </div>
         <div class="art-row">
-          <button class="btn dark sm" data-request="${esc(task.id)}" ${requested || submitting ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Enviar solicitação')}</button>
+          <button class="btn dark sm" data-request="${esc(task.id)}" disabled>Item selecionado</button>
           <label class="btn dark sm" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
             Anexar capa (opcional)
             <input type="file" accept="image/*" data-upload-cover="${esc(task.id)}" style="display:none">
@@ -1991,24 +2018,26 @@
   artTabDone.addEventListener('click', () => { artActiveTab = 'done'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
 
   resetRequestsBtn?.addEventListener('click', async () => {
-    const confirmReset = window.confirm('Deseja zerar as solicitacoes e atualizar o painel?');
+    const selectedTask = artTasks.find(t => t.id === artTaskFocusId);
+    if (!selectedTask) {
+      alert('Selecione primeiro o item que deseja zerar.');
+      return;
+    }
+
+    const confirmReset = window.confirm(`Deseja zerar apenas a solicitacao de ${selectedTask.artistName || 'Artista'} - ${selectedTask.itemTitle || 'Item'}?`);
     if (!confirmReset) return;
+
     try {
-      await clearGavetaRequests();
-      remoteRequests = [];
-      artTasks = artTasks.map(task => ({
-        ...task,
-        requested: false,
-        calendarEventId: '',
-        upstreamTaskId: '',
-        status: task.status === 'done' ? 'done' : 'pending',
-      }));
-      artTaskFocusId = '';
+      await clearGavetaRequestBySignature(selectedTask.signature || taskSignature(selectedTask));
+      remoteRequests = remoteRequests.filter(req => String(req.signature || '') !== String(selectedTask.signature || taskSignature(selectedTask)));
+      selectedTask.requested = false;
+      selectedTask.calendarEventId = '';
+      selectedTask.upstreamTaskId = '';
+      if (selectedTask.status !== 'done') selectedTask.status = 'pending';
       saveArtTasks();
-      await loadDashboard({ forceRefresh: true });
-      showToast('Solicitacoes zeradas e painel atualizado.', 'success');
+      showToast('Solicitacao do item selecionado foi zerada.', 'success');
     } catch (err) {
-      alert(err.message || 'Nao foi possivel zerar as solicitacoes agora.');
+      alert(err.message || 'Nao foi possivel zerar esta solicitacao agora.');
     }
   });
 

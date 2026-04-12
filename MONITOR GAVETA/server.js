@@ -1030,10 +1030,18 @@ app.get('/api/gaveta/requests', async (_req, res) => {
   }
 });
 
-app.delete('/api/gaveta/requests', async (_req, res) => {
+app.delete('/api/gaveta/requests', async (req, res) => {
   try {
-    await writeGavetaRequestsStoreQueued([]);
-    return res.json({ ok: true, cleared: true, requests: [] });
+    const signature = String(req.query?.signature || '').trim().toLowerCase();
+    if (!signature) {
+      await writeGavetaRequestsStoreQueued([]);
+      return res.json({ ok: true, cleared: true, requests: [] });
+    }
+
+    const store = await readGavetaRequestsStore();
+    const nextItems = (store.items || []).filter(item => String(item.signature || '').toLowerCase() !== signature);
+    await writeGavetaRequestsStoreQueued(nextItems);
+    return res.json({ ok: true, cleared: true, signature, requests: nextItems });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
   }
