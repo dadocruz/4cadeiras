@@ -121,8 +121,9 @@
     .media-title a:hover{text-decoration:underline;opacity:.8}
     .media-date{font-size:10px;color:var(--muted)}
     .media-stat{text-align:right;flex-shrink:0;padding-left:6px}
-    .media-actions{grid-column:1 / -1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:6px}
-    .media-actions .btn.sm{padding:4px 9px;font-size:11px;border-radius:8px;white-space:nowrap}
+    .media-actions{grid-column:1 / -1;display:flex;gap:4px;flex-wrap:nowrap;align-items:center;justify-content:center;margin-top:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:1px}
+    .media-actions .btn.sm{padding:3px 7px;font-size:10px;border-radius:8px;white-space:nowrap;line-height:1.1}
+    .media-actions::-webkit-scrollbar{height:0}
     .media-row.single-row{grid-template-columns:64px 1fr auto}
     .media-num{font:800 14px/1 Syne,sans-serif;white-space:nowrap}
     .media-lbl{font-size:9px;color:var(--soft);margin-top:2px}
@@ -717,8 +718,19 @@
     try {
       const u = new URL(raw);
       const host = String(u.hostname || '').replace(/^www\./i, '').toLowerCase();
-      const pathname = String(u.pathname || '').replace(/\/+$/, '').toLowerCase();
-      return `${host}${pathname}`;
+      const pathname = String(u.pathname || '').replace(/\/+$/, '');
+
+      if (host === 'youtu.be') {
+        const videoId = pathname.replace(/^\/+/, '');
+        return videoId ? `youtube.com/watch?v=${videoId}` : 'youtube.com/watch';
+      }
+
+      if (host.includes('youtube.com') && pathname === '/watch') {
+        const videoId = String(u.searchParams.get('v') || '').trim();
+        return videoId ? `youtube.com/watch?v=${videoId}` : 'youtube.com/watch';
+      }
+
+      return `${host}${pathname.toLowerCase()}`;
     } catch {
       return raw.toLowerCase();
     }
@@ -839,6 +851,27 @@
     const loose = taskLooseSignatureFromParts(type, artistName, itemTitle);
     const source = normalizeSourceUrl(sourceUrl);
 
+    if (String(type || '').toLowerCase() === 'traffic') {
+      const localTraffic = artTasks.some(task => {
+        if (String(task.type || '').toLowerCase() !== 'traffic') return false;
+        if (!isTaskRequested(task)) return false;
+        const sameSignature = String(task.signature || '') === signature;
+        const sameSource = source && normalizeSourceUrl(task.sourceUrl) === source;
+        const sameLooseWithoutSource = !source && taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
+        return sameSignature || sameSource || sameLooseWithoutSource;
+      });
+
+      const remoteTraffic = remoteRequests.some(req => {
+        if (String(req.type || '').toLowerCase() !== 'traffic') return false;
+        const sameSignature = String(req.signature || '') === signature;
+        const sameSource = source && normalizeSourceUrl(req.sourceUrl) === source;
+        const sameLooseWithoutSource = !source && taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle) === loose;
+        return sameSignature || sameSource || sameLooseWithoutSource;
+      });
+
+      return localTraffic || remoteTraffic;
+    }
+
     const local = artTasks.some(task => {
       const exact = String(task.signature || '') === signature;
       const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
@@ -890,11 +923,16 @@
     const selectedSig = String(task.signature || taskSignature(task));
     const selectedLoose = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle);
     const selectedSource = normalizeSourceUrl(task.sourceUrl);
+    const isTraffic = String(task.type || '').toLowerCase() === 'traffic';
     remoteRequests = remoteRequests.filter(req => {
       const reqSig = String(req.signature || '');
       const reqLoose = taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle);
       const reqSource = normalizeSourceUrl(req.sourceUrl);
       if (reqSig && reqSig === selectedSig) return false;
+      if (isTraffic) {
+        if (selectedSource && reqSource && reqSource === selectedSource) return false;
+        return true;
+      }
       if (selectedLoose && reqLoose === selectedLoose) return false;
       if (selectedSource && reqSource && reqSource === selectedSource) return false;
       return true;
@@ -902,11 +940,19 @@
   }
 
   function findMatchingTasksForReset({ type, artistName, itemTitle, milestone, sourceUrl }) {
+    const normalizedType = String(type || '').toLowerCase();
     const signature = taskSignatureFromParts(type, artistName, itemTitle, milestone);
     const loose = taskLooseSignatureFromParts(type, artistName, itemTitle);
     const source = normalizeSourceUrl(sourceUrl);
     return artTasks.filter(task => {
       const exact = String(task.signature || '') === signature;
+      if (normalizedType === 'traffic') {
+        const sameType = String(task.type || '').toLowerCase() === 'traffic';
+        if (!sameType) return false;
+        const sameSource = source && normalizeSourceUrl(task.sourceUrl) === source;
+        const looseWithoutSource = !source && taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
+        return exact || sameSource || looseWithoutSource;
+      }
       const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
       const sourceTask = source && normalizeSourceUrl(task.sourceUrl) === source;
       return exact || looseTask || sourceTask;
@@ -922,12 +968,17 @@
     }
 
     for (const task of requestedMatches) {
-      await clearGavetaRequestByTask(task);
+      const resetResult = await clearGavetaRequestByTask(task);
       clearRemoteMatchesByTask(task);
       task.requested = false;
       task.calendarEventId = '';
       task.upstreamTaskId = '';
       if (task.status !== 'done') task.status = 'pending';
+
+      const warnings = Array.isArray(resetResult?.cancellationSyncWarnings) ? resetResult.cancellationSyncWarnings : [];
+      if (warnings.length) {
+        showToast('Pedido foi zerado no painel, mas agenda não confirmou remoção automática.', 'warn');
+      }
     }
 
     saveArtTasks();
