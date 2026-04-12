@@ -1122,7 +1122,7 @@
           <div class="traffic-meta">${fmtDate(a.publishedAt)} · ${Number(a.daysOld) || 0}d atrás</div>
         </div>
         <div class="traffic-cta">
-          <span class="cta-label">Solicitar tráfego</span>
+          <span class="cta-label">Rodar tráfego</span>
           <div class="cta-views">${compact(a.views)} Visualizações</div>
         </div>
       </a>
@@ -1162,7 +1162,7 @@
         <div class="media-info">
           <div class="media-title"><a href="${esc(v.youtubeUrl || '#')}" target="_blank" rel="noopener">${esc(v.title || 'Video')}</a></div>
           <div class="media-date">${fmtDate(v.publishedAt) || 'sem data'}${v.daysOld < 999 ? ` · ${v.daysOld}d` : ''}</div>
-          ${v.needsTraffic ? '<span class="traffic-tag">SOLICITAR TRÁFEGO</span>' : ''}
+
         </div>
         <div class="media-stat">
           <div class="media-num">${compact(v.views)}</div>

@@ -350,8 +350,8 @@
 
 <aside class="drawer hidden" id="trafficDrawer">
   <div class="drawer-head">
-    <h3>Solicitar Tráfego</h3>
-    <p>Defina valor de investimento e meta de visualizações para o vídeo.</p>
+    <h3>Rodar Tráfego</h3>
+    <p>Defina a meta de visualizações e veja o valor estimado automaticamente.</p>
   </div>
   <div class="drawer-body">
     <div class="hint" id="trafficSummary">Selecione um vídeo com baixa visualização para iniciar.</div>
@@ -361,10 +361,11 @@
     </div>
     <div class="field">
       <label>Investimento (R$)</label>
-      <input class="input" id="trafficBudgetInput" placeholder="Ex.: 50,00" inputmode="numeric" autocomplete="off">
+      <input class="input" id="trafficBudgetInput" placeholder="Estimado automaticamente" readonly>
     </div>
-    <div class="hint" id="trafficEstimateHint">Preencha um dos campos para calcular o outro automaticamente.</div>
+    <div class="hint" id="trafficEstimateHint">Digite a meta de visualizações para calcular o valor estimado.</div>
     <button class="btn red" id="trafficSendBtn">Enviar solicitação de tráfego</button>
+    <button class="btn dark hidden" id="trafficCancelBtn">Cancelar tráfego solicitado</button>
   </div>
   <div class="drawer-footer">
     <button class="btn dark" id="closeTraffic">Fechar</button>
@@ -645,6 +646,7 @@
   const trafficBudgetInput = qs('trafficBudgetInput');
   const trafficViewsInput = qs('trafficViewsInput');
   const trafficSendBtn = qs('trafficSendBtn');
+  const trafficCancelBtn = qs('trafficCancelBtn');
   const trafficSummary = qs('trafficSummary');
   const trafficEstimateHint = qs('trafficEstimateHint');
   const formError = qs('formError');
@@ -660,6 +662,7 @@
   let artArtistFilter = '';
   let artTaskFocusId = '';
   let trafficDraft = null;
+  let trafficEditTargetTask = null;
   let trafficInputLock = false;
 
   function showToast(message, type = 'info') {
@@ -757,7 +760,7 @@
   function updateTrafficEstimateHint(budget, views) {
     if (!trafficEstimateHint) return;
     if (!budget && !views) {
-      trafficEstimateHint.textContent = 'Preencha um dos campos para calcular o outro automaticamente.';
+      trafficEstimateHint.textContent = 'Digite a meta de visualizações para calcular o valor estimado.';
       return;
     }
     trafficEstimateHint.textContent = `Estimativa: ${formatBrCurrency(budget)} para aproximadamente ${formatViews(views)} visualizações.`;
@@ -783,6 +786,39 @@
       trafficBudgetInput.value = cents > 0 ? formatCurrencyFromCents(cents) : '';
     }
     updateTrafficEstimateHint(budget, v);
+  }
+
+  function budgetFromTrafficTask(task) {
+    const direct = Number(task?.trafficBudget || 0);
+    if (direct > 0) return direct;
+    const note = String(task?.note || '');
+    const match = note.match(/R\$\s*([\d\.]+,\d{2})/i);
+    if (!match) return 0;
+    return parseBrCurrencyInput(match[1]);
+  }
+
+  function findRequestedTrafficTask(artistName, itemTitle, sourceUrl) {
+    const loose = taskLooseSignatureFromParts('traffic', artistName, itemTitle);
+    const source = normalizeSourceUrl(sourceUrl);
+    return artTasks.find(task => {
+      if (String(task.type || '').toLowerCase() !== 'traffic') return false;
+      if (!isTaskRequested(task)) return false;
+      const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
+      const sourceTask = source && normalizeSourceUrl(task.sourceUrl) === source;
+      return looseTask || sourceTask;
+    }) || null;
+  }
+
+  function setTrafficDrawerMode(mode) {
+    const editing = mode === 'edit';
+    if (trafficSendBtn) {
+      trafficSendBtn.textContent = editing ? 'Salvar correção de tráfego' : 'Enviar solicitação de tráfego';
+    }
+    if (trafficCancelBtn) {
+      trafficCancelBtn.classList.toggle('hidden', !editing);
+      trafficCancelBtn.disabled = false;
+      trafficCancelBtn.textContent = 'Cancelar tráfego solicitado';
+    }
   }
 
   function setTrafficSubmitting(sourceUrl, on) {
@@ -838,8 +874,8 @@
       const source = btn.getAttribute('data-source') || '';
       const requested = hasRequestedSignature('traffic', artist, title, currentViews, source);
       const submitting = Boolean(source && trafficSubmittingBySource.has(normalizeSourceUrl(source)));
-      btn.disabled = requested || submitting;
-      btn.textContent = requested ? 'Tráfego solicitado' : (submitting ? 'Enviando...' : 'Solicitar tráfego');
+      btn.disabled = submitting;
+      btn.textContent = requested ? 'Tráfego solicitado' : (submitting ? 'Enviando...' : 'Rodar tráfego');
       btn.classList.toggle('requested', requested);
       btn.classList.toggle('orange', !requested);
     });
@@ -1899,7 +1935,7 @@
           <div class="traffic-meta">${fmtDate(a.publishedAt)} · ${Number(a.daysOld) || 0}d atrás</div>
         </div>
         <div class="traffic-cta">
-          <span class="cta-label">Solicitar tráfego</span>
+          <span class="cta-label">Rodar tráfego</span>
           <div class="cta-views">${compact(a.views)} views</div>
         </div>
       </a>
@@ -1954,7 +1990,7 @@
           <div class="media-num">${compact(v.views)}</div>
           <div class="media-lbl">views</div>
           <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
-          ${v.needsTraffic ? `<button class="btn sm ${trafficRequested ? 'requested' : 'orange'}" data-quick-traffic="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-current="${Number(v.views || 0)}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(trafficRequested || trafficSubmitting) ? 'disabled' : ''}>${trafficRequested ? 'Tráfego solicitado' : (trafficSubmitting ? 'Enviando...' : 'Solicitar tráfego')}</button>` : ''}
+          ${v.needsTraffic ? `<button class="btn sm ${trafficRequested ? 'requested' : 'orange'}" data-quick-traffic="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-current="${Number(v.views || 0)}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${trafficSubmitting ? 'disabled' : ''}>${trafficRequested ? 'Tráfego solicitado' : (trafficSubmitting ? 'Enviando...' : 'Rodar tráfego')}</button>` : ''}
           <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}">Subir artes</button>
         </div>
       </div>
@@ -2164,24 +2200,28 @@
   }
 
   function openTrafficDrawerForVideo(draft) {
+    const existingTrafficTask = findRequestedTrafficTask(draft.artistName || '', draft.videoTitle || '', draft.sourceUrl || '');
+    trafficEditTargetTask = existingTrafficTask;
     trafficDraft = {
       artistName: draft.artistName || 'Artista',
       videoTitle: draft.videoTitle || 'Video',
       currentViews: Number(draft.currentViews || 0),
       sourceUrl: draft.sourceUrl || '',
       coverUrl: draft.coverUrl || '',
-      budget: Number(draft.budget || 0),
-      viewsTarget: Number(draft.viewsTarget || 0),
+      budget: Number(draft.budget || budgetFromTrafficTask(existingTrafficTask) || 0),
+      viewsTarget: Number(draft.viewsTarget || existingTrafficTask?.trafficViewsTarget || existingTrafficTask?.milestone || 0),
     };
+
+    setTrafficDrawerMode(existingTrafficTask ? 'edit' : 'create');
 
     if (trafficSummary) {
       trafficSummary.textContent = `${trafficDraft.artistName} · ${trafficDraft.videoTitle} · Atual ${formatViews(trafficDraft.currentViews)} views`;
     }
 
-    if (trafficDraft.budget > 0) {
-      fillTrafficByBudget(trafficDraft.budget);
-    } else if (trafficDraft.viewsTarget > 0) {
+    if (trafficDraft.viewsTarget > 0) {
       fillTrafficByViews(trafficDraft.viewsTarget);
+    } else if (trafficDraft.budget > 0) {
+      fillTrafficByBudget(trafficDraft.budget);
     } else {
       if (trafficBudgetInput) trafficBudgetInput.value = '';
       if (trafficViewsInput) trafficViewsInput.value = '';
@@ -2191,20 +2231,6 @@
     openDrawer(trafficDrawer);
     trafficViewsInput?.focus();
   }
-
-  trafficBudgetInput?.addEventListener('input', () => {
-    if (trafficInputLock) return;
-    trafficInputLock = true;
-    const cents = parseCurrencyToCents(trafficBudgetInput.value);
-    trafficBudgetInput.value = cents ? formatCurrencyFromCents(cents) : '';
-    const budget = cents / 100;
-    fillTrafficByBudget(budget);
-    if (trafficDraft) {
-      trafficDraft.budget = budget;
-      trafficDraft.viewsTarget = Math.max(0, Math.round(budget / TRAFFIC_COST_PER_VIEW));
-    }
-    trafficInputLock = false;
-  });
 
   trafficViewsInput?.addEventListener('input', () => {
     if (trafficInputLock) return;
@@ -2243,6 +2269,15 @@
         trafficSendBtn.disabled = true;
         trafficSendBtn.textContent = 'Enviando...';
       }
+
+      if (trafficEditTargetTask && isTaskRequested(trafficEditTargetTask)) {
+        await clearGavetaRequestByTask(trafficEditTargetTask);
+        trafficEditTargetTask.requested = false;
+        trafficEditTargetTask.calendarEventId = '';
+        trafficEditTargetTask.upstreamTaskId = '';
+        if (trafficEditTargetTask.status !== 'done') trafficEditTargetTask.status = 'pending';
+      }
+
       await requestTrafficFromDraft(trafficDraft);
       showToast('Solicitação de tráfego enviada para agenda.', 'success');
       closeDrawers();
@@ -2254,8 +2289,38 @@
       setTrafficSubmitting(trafficDraft.sourceUrl, false);
       if (trafficSendBtn) {
         trafficSendBtn.disabled = false;
-        trafficSendBtn.textContent = 'Enviar solicitação de tráfego';
+        setTrafficDrawerMode(trafficEditTargetTask ? 'edit' : 'create');
       }
+    }
+  });
+
+  trafficCancelBtn?.addEventListener('click', async () => {
+    if (!trafficEditTargetTask) {
+      showToast('Nenhuma solicitação de tráfego para cancelar neste vídeo.', 'warn');
+      return;
+    }
+
+    const confirmed = window.confirm(`Cancelar tráfego solicitado para ${trafficEditTargetTask.artistName || 'Artista'} - ${trafficEditTargetTask.itemTitle || 'Vídeo'}?`);
+    if (!confirmed) return;
+
+    try {
+      trafficCancelBtn.disabled = true;
+      trafficCancelBtn.textContent = 'Cancelando...';
+      await clearGavetaRequestByTask(trafficEditTargetTask);
+      trafficEditTargetTask.requested = false;
+      trafficEditTargetTask.calendarEventId = '';
+      trafficEditTargetTask.upstreamTaskId = '';
+      if (trafficEditTargetTask.status !== 'done') trafficEditTargetTask.status = 'pending';
+      saveArtTasks();
+      showToast('Tráfego solicitado cancelado.', 'success');
+      closeDrawers();
+      await refreshRemoteRequests();
+      await loadDashboard();
+    } catch (err) {
+      showErrorToast(err, 'Não foi possível cancelar a solicitação de tráfego.');
+    } finally {
+      trafficCancelBtn.disabled = false;
+      trafficCancelBtn.textContent = 'Cancelar tráfego solicitado';
     }
   });
 
