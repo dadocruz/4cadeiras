@@ -392,7 +392,36 @@ function cacheSet(key, value, ttlMs) {
   return value;
 }
 
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isTransientHttpStatus(status) {
+  const code = Number(status || 0);
+  return code === 408 || code === 429 || code >= 500;
+}
+
+async function fetchWithRetry(url, options = {}, retries = 2) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok && isTransientHttpStatus(res.status) && attempt < retries) {
+        await wait(180 * (attempt + 1));
+        continue;
+      }
+      return res;
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries) break;
+      await wait(180 * (attempt + 1));
+    }
+  }
+  throw lastError || new Error('Falha de rede temporária');
+}
+
 async function remember(key, ttlMs, factory) {
+  const staleEntry = cache.get(key);
   const hit = cacheGet(key);
   if (hit !== null) return hit;
   if (inflight.has(key)) return inflight.get(key);
@@ -401,6 +430,12 @@ async function remember(key, ttlMs, factory) {
     try {
       const value = await factory();
       return cacheSet(key, value, ttlMs);
+    } catch (error) {
+      if (staleEntry && staleEntry.value !== undefined) {
+        cacheSet(key, staleEntry.value, Math.max(60_000, Math.floor(ttlMs / 3)));
+        return staleEntry.value;
+      }
+      throw error;
     } finally {
       inflight.delete(key);
     }
@@ -447,14 +482,14 @@ async function getSpotifyAccessToken() {
   }
 
   const auth = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64');
-  const res = await fetch('https://accounts.spotify.com/api/token', {
+  const res = await fetchWithRetry('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
       'Authorization': `Basic ${auth}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: 'grant_type=client_credentials',
-  });
+  }, 2);
 
   if (!res.ok) {
     throw new Error(`Spotify token ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -468,9 +503,9 @@ async function getSpotifyAccessToken() {
 
 async function spotifyGet(path) {
   const token = await getSpotifyAccessToken();
-  const res = await fetch(`https://api.spotify.com/v1${path}`, {
+  const res = await fetchWithRetry(`https://api.spotify.com/v1${path}`, {
     headers: { 'Authorization': `Bearer ${token}` },
-  });
+  }, 2);
 
   if (!res.ok) {
     throw new Error(`Spotify ${res.status}: ${(await res.text()).slice(0, 260)}`);
@@ -786,7 +821,7 @@ async function getGeminiSpotifySignals(artistName, spotifyArtistUrl) {
 }
 
 async function youtubeGet(url) {
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url, {}, 2);
   if (!res.ok) throw new Error(`YT ${res.status}: ${(await res.text()).slice(0, 260)}`);
   return res.json();
 }

@@ -1148,15 +1148,19 @@
     }
 
     const bySpotifyId = new Map();
+    const byArtistName = new Map();
     cachedPayload.artists.forEach(item => {
       const id = String(item?.spotifyArtistId || '').trim();
       if (id) bySpotifyId.set(id, item);
+      const nameKey = normalizeSigText(item?.artistName || '');
+      if (nameKey) byArtistName.set(nameKey, item);
     });
 
     const artists = livePayload.artists.map(item => {
       if (!item?.error) return item;
       const id = String(item?.spotifyArtistId || '').trim();
-      const cachedItem = bySpotifyId.get(id);
+      const nameKey = normalizeSigText(item?.artistName || '');
+      const cachedItem = bySpotifyId.get(id) || byArtistName.get(nameKey);
       return cachedItem || item;
     });
 
