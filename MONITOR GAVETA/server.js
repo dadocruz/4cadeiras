@@ -84,6 +84,48 @@ function writeGavetaRequestsStoreQueued(items = []) {
   return gavetaRequestsWriteQueue;
 }
 
+async function markGavetaRequestUploaded(taskId, uploaded = []) {
+  const store = await readGavetaRequestsStore();
+  const items = Array.isArray(store.items) ? [...store.items] : [];
+  const index = [...items].reverse().findIndex(item => String(item.taskId || '') === String(taskId || ''));
+  if (index === -1) return null;
+
+  const realIndex = items.length - 1 - index;
+  const current = { ...(items[realIndex] || {}) };
+  const driveUrls = uploaded
+    .map(item => String(item?.driveUrl || item?.webViewLink || '').trim())
+    .filter(Boolean);
+  const driveUrl = driveUrls[0] || String(current.driveUrl || '').trim();
+
+  current.status = 'done';
+  current.uploadedAt = new Date().toISOString();
+  current.uploadedFiles = uploaded;
+  current.driveUrl = driveUrl;
+  current.driveUrls = driveUrls;
+  items[realIndex] = current;
+
+  await writeGavetaRequestsStoreQueued(items);
+
+  if (current.calendarEventId && current.upstreamTaskId) {
+    try {
+      await postToGavetaAppsScript({
+        action: 'updateTaskStatus',
+        taskId: String(current.upstreamTaskId || '').trim(),
+        status: 'done',
+        driveLink: driveUrl,
+        driveLinks: driveUrls,
+        artist: current.artistName || '',
+        title: current.itemTitle || '',
+        note: 'Arte enviada e concluída.',
+      });
+    } catch {
+      // Mantém o upload bem-sucedido mesmo se a atualização da agenda falhar.
+    }
+  }
+
+  return current;
+}
+
 async function postToGavetaAppsScript(payload) {
   if (!gavetaAppsScriptUrl) {
     throw new Error('GAVETA_APPS_SCRIPT_URL ausente no backend. Defina a URL /exec da Web App publicada no Render.');
@@ -1111,6 +1153,12 @@ app.post('/api/gaveta/upload', async (req, res) => {
 
     if (!uploaded.length) {
       return res.status(502).json({ ok: false, error: 'Falha no upload para o Drive. Verifique Apps Script e pasta.' });
+    }
+
+    try {
+      await markGavetaRequestUploaded(taskId, uploaded);
+    } catch {
+      // A resposta do upload continua válida mesmo se a sincronização da agenda falhar.
     }
 
     return res.json({ ok: true, taskId, uploaded });
