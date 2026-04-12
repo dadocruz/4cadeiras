@@ -294,14 +294,6 @@
     <p>Painel de entrega: subir Feed e Reels no Drive e compartilhar com o cliente.</p>
   </div>
   <div class="drawer-body">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn dark sm" id="artTabPending">Aguardando</button>
-      <button class="btn dark sm" id="artTabProgress">Produção</button>
-      <button class="btn dark sm" id="artTabReady">Prontas</button>
-      <button class="btn dark sm" id="artTabDone">Entregues</button>
-      <button class="btn red sm" id="artAddManualBtn">+ Arte manual</button>
-      <button class="btn dark sm" id="resetRequestsBtn">Zerar item selecionado</button>
-    </div>
     <div id="artTasksList" class="media-list"></div>
   </div>
   <div class="drawer-footer">
@@ -361,7 +353,6 @@
     </div>
     <div class="hint" id="trafficEstimateHint">Digite a meta de visualizações para calcular o valor estimado.</div>
     <button class="btn red" id="trafficSendBtn">Enviar solicitação de tráfego</button>
-    <button class="btn dark hidden" id="trafficCancelBtn">Cancelar tráfego solicitado</button>
   </div>
   <div class="drawer-footer">
     <button class="btn dark" id="closeTraffic">Fechar</button>
@@ -822,11 +813,6 @@
     const editing = mode === 'edit';
     if (trafficSendBtn) {
       trafficSendBtn.textContent = editing ? 'Salvar correção de tráfego' : 'Enviar solicitação de tráfego';
-    }
-    if (trafficCancelBtn) {
-      trafficCancelBtn.classList.toggle('hidden', !editing);
-      trafficCancelBtn.disabled = false;
-      trafficCancelBtn.textContent = 'Cancelar tráfego solicitado';
     }
   }
 
@@ -1858,14 +1844,9 @@
           <span class="status-pill status-${esc(task.status)}">${statusLabel(task.status)}</span>
         </div>
         <div class="art-row">
-          <button class="btn dark sm" data-request="${esc(task.id)}" disabled>Item selecionado</button>
           <label class="btn dark sm" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
-            Anexar Feed
-            <input type="file" accept="image/*,video/*" data-upload-feed="${esc(task.id)}" style="display:none">
-          </label>
-          <label class="btn dark sm" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
-            Anexar Reels
-            <input type="file" accept="image/*,video/*" data-upload-reels="${esc(task.id)}" style="display:none">
+            Selecionar artes
+            <input type="file" accept="image/*,video/*" data-upload-delivery="${esc(task.id)}" multiple style="display:none">
           </label>
           <button class="btn dark sm" data-send-delivery="${esc(task.id)}">Subir artes no Drive</button>
           ${(task.assets || []).map((asset, i) => {
@@ -1891,38 +1872,23 @@
 
     artTasksList.innerHTML = `<section class="task-group"><div class="task-group-title requested">Entrega selecionada</div>${filtered.map(renderTaskCard).join('')}</section>`;
 
-    artTasksList.querySelectorAll('[data-request]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-request');
-        const task = artTasks.find(t => t.id === id);
-        if (!task) return;
-        artTaskFocusId = task.id;
-        artActiveTab = task.status || 'pending';
-        renderArtTasks();
-      });
-    });
-
     artTasksList.querySelectorAll('[data-send-delivery]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-send-delivery');
         const task = artTasks.find(t => t.id === id);
         if (!task) return;
 
-        const feedInput = artTasksList.querySelector(`[data-upload-feed="${id}"]`);
-        const reelsInput = artTasksList.querySelector(`[data-upload-reels="${id}"]`);
-        const feedFile = feedInput?.files?.[0] || null;
-        const reelsFile = reelsInput?.files?.[0] || null;
+        const deliveryInput = artTasksList.querySelector(`[data-upload-delivery="${id}"]`);
+        const selectedFiles = Array.from(deliveryInput?.files || []);
 
         const filesToUpload = [];
-        if (feedFile) {
-          filesToUpload.push(new File([feedFile], normalizeSlotFileName(task, feedFile, 'feed'), { type: feedFile.type || 'application/octet-stream' }));
-        }
-        if (reelsFile) {
-          filesToUpload.push(new File([reelsFile], normalizeSlotFileName(task, reelsFile, 'reels'), { type: reelsFile.type || 'application/octet-stream' }));
-        }
+        selectedFiles.slice(0, 6).forEach((pickedFile, idx) => {
+          const slot = idx === 0 ? 'feed' : (idx === 1 ? 'reels' : `arte-${idx + 1}`);
+          filesToUpload.push(new File([pickedFile], normalizeSlotFileName(task, pickedFile, slot), { type: pickedFile.type || 'application/octet-stream' }));
+        });
 
         if (!filesToUpload.length) {
-          alert('Anexe ao menos uma arte (Feed ou Reels) antes de enviar.');
+          alert('Selecione ao menos uma arte antes de enviar.');
           return;
         }
 
@@ -1949,8 +1915,7 @@
           });
           showToast('Artes enviadas para o Drive. Arte disponível para ele visualizar.', 'success');
           setTimeout(() => clearUploadState(task.id), 5000);
-          if (feedInput) feedInput.value = '';
-          if (reelsInput) reelsInput.value = '';
+          if (deliveryInput) deliveryInput.value = '';
         } catch (err) {
           setUploadState(task.id, {
             phase: 'error',
@@ -2413,36 +2378,6 @@
     }
   });
 
-  trafficCancelBtn?.addEventListener('click', async () => {
-    if (!trafficEditTargetTask) {
-      showToast('Nenhuma solicitação de tráfego para cancelar neste vídeo.', 'warn');
-      return;
-    }
-
-    const confirmed = window.confirm(`Cancelar tráfego solicitado para ${trafficEditTargetTask.artistName || 'Artista'} - ${trafficEditTargetTask.itemTitle || 'Vídeo'}?`);
-    if (!confirmed) return;
-
-    try {
-      trafficCancelBtn.disabled = true;
-      trafficCancelBtn.textContent = 'Cancelando...';
-      await clearGavetaRequestByTask(trafficEditTargetTask);
-      trafficEditTargetTask.requested = false;
-      trafficEditTargetTask.calendarEventId = '';
-      trafficEditTargetTask.upstreamTaskId = '';
-      if (trafficEditTargetTask.status !== 'done') trafficEditTargetTask.status = 'pending';
-      saveArtTasks();
-      showToast('Tráfego solicitado cancelado.', 'success');
-      closeDrawers();
-      await refreshRemoteRequests();
-      await loadDashboard();
-    } catch (err) {
-      showErrorToast(err, 'Não foi possível cancelar a solicitação de tráfego.');
-    } finally {
-      trafficCancelBtn.disabled = false;
-      trafficCancelBtn.textContent = 'Cancelar tráfego solicitado';
-    }
-  });
-
   qs('addBtn').addEventListener('click', () => openDrawer(addDrawer));
   artBtn.addEventListener('click', () => {
     artArtistFilter = '';
@@ -2462,10 +2397,10 @@
   backdrop.addEventListener('click', closeDrawers);
   qs('saveArtist').addEventListener('click', saveArtist);
 
-  artTabPending.addEventListener('click', () => { artActiveTab = 'pending'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabProgress.addEventListener('click', () => { artActiveTab = 'progress'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabReady.addEventListener('click', () => { artActiveTab = 'ready'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabDone.addEventListener('click', () => { artActiveTab = 'done'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
+  artTabPending?.addEventListener('click', () => { artActiveTab = 'pending'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
+  artTabProgress?.addEventListener('click', () => { artActiveTab = 'progress'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
+  artTabReady?.addEventListener('click', () => { artActiveTab = 'ready'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
+  artTabDone?.addEventListener('click', () => { artActiveTab = 'done'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
 
   resetRequestsBtn?.addEventListener('click', async () => {
     const selectedTask = artTasks.find(t => t.id === artTaskFocusId);
@@ -2507,7 +2442,7 @@
     }
   });
 
-  artAddManualBtn.addEventListener('click', () => {
+  artAddManualBtn?.addEventListener('click', () => {
     const artistName = window.prompt('Nome do artista');
     if (!artistName) return;
     const itemTitle = window.prompt('Titulo da arte (ex: Single X 100k)');
