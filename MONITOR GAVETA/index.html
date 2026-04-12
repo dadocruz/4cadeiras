@@ -601,6 +601,7 @@
   let artistsCloudSyncQueue = Promise.resolve();
   let artTasks = [];
   const uploadStates = new Map();
+  const quickRequestSubmitting = new Set();
   let remoteRequests = [];
   const requestSubmittingIds = new Set();
   let artActiveTab = 'pending';
@@ -622,6 +623,10 @@
 
   function taskSignatureFromParts(type, artistName, itemTitle, milestone) {
     return [type || '', artistName || '', itemTitle || '', Number(milestone || 0)].join('|').toLowerCase();
+  }
+
+  function quickRequestKey(type, artistName, itemTitle, milestone) {
+    return taskSignatureFromParts(type, artistName, itemTitle, milestone);
   }
 
   function normalizeSigText(value) {
@@ -1547,8 +1552,7 @@
           <div class="upload-progress"><div class="upload-progress-fill" data-upload-fill style="width:0%"></div></div>
         </div>
         <div class="art-task-meta">Status do pedido: ${requested ? 'pedido enviado para agenda' : (submitting ? 'enviando solicitacao para agenda...' : 'aguardando envio')}</div>
-        <div class="art-task-meta">Preencha se quiser: mensagem para equipe e capa de referencia.</div>
-        <textarea class="input" rows="2" data-note="${esc(task.id)}" placeholder="Mensagem para a equipe (opcional)">${esc(task.note || '')}</textarea>
+        <div class="art-task-meta">Use o botao Pedir arte no painel para solicitar em 1 clique.</div>
         <div class="art-row">
           <button class="btn red sm" data-submit-request="${esc(task.id)}" ${requested || submitting ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Enviar solicitação')}</button>
           ${task.driveUrl ? `<a class="btn requested sm" href="${esc(task.driveUrl)}" target="_blank" rel="noopener">Arte disponivel</a>` : ''}
@@ -1577,9 +1581,6 @@
         const task = artTasks.find(t => t.id === id);
         if (!task || isTaskRequested(task) || requestSubmittingIds.has(id)) return;
 
-        const noteField = artTasksList.querySelector(`[data-note="${id}"]`);
-        if (noteField) task.note = String(noteField.value || '').trim();
-
         try {
           requestSubmittingIds.add(id);
           renderArtTasks();
@@ -1592,16 +1593,6 @@
           requestSubmittingIds.delete(id);
           renderArtTasks();
         }
-      });
-    });
-
-    artTasksList.querySelectorAll('[data-note]').forEach(field => {
-      field.addEventListener('change', () => {
-        const id = field.getAttribute('data-note');
-        const task = artTasks.find(t => t.id === id);
-        if (!task) return;
-        task.note = field.value;
-        saveArtTasks();
       });
     });
 
@@ -1751,6 +1742,7 @@
     const hasPlays = s.plays !== null && s.plays !== undefined;
     const demand = computeDemandStatus(Number(s.plays || 0), 50000);
     const milestone = Number(demand.currentTarget || 0);
+    const submitting = quickRequestSubmitting.has(quickRequestKey('single', s.artistName || '', s.title || 'Single', milestone));
     const requested = hasRequestedSignature('single', s.artistName || '', s.title || 'Single', milestone, s.spotifyUrl || '');
     return `
       <div class="media-row">
@@ -1766,7 +1758,7 @@
           ${hasPlays
             ? `<div class="media-num">${compact(s.plays)}</div><div class="media-lbl">streams</div>`
             : '<div class="no-data">--</div>'}
-          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${milestone}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}" ${requested ? 'disabled' : ''}>${requested ? 'Pedido enviado' : 'Pedir arte'}</button>
+          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${milestone}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
           <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${milestone}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}">Subir artes</button>
         </div>
       </div>
@@ -1776,6 +1768,7 @@
   function videoRow(v) {
     const demand = computeDemandStatus(Number(v.views || 0), 50000);
     const milestone = Number(demand.currentTarget || 0);
+    const submitting = quickRequestSubmitting.has(quickRequestKey('youtube', v.artistName || '', v.title || 'Video', milestone));
     const requested = hasRequestedSignature('youtube', v.artistName || '', v.title || 'Video', milestone, v.youtubeUrl || '');
     return `
       <div class="media-row">
@@ -1791,7 +1784,7 @@
         <div class="media-stat">
           <div class="media-num">${compact(v.views)}</div>
           <div class="media-lbl">views</div>
-          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${requested ? 'disabled' : ''}>${requested ? 'Pedido enviado' : 'Pedir arte'}</button>
+          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
           <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}">Subir artes</button>
         </div>
       </div>
@@ -1854,6 +1847,7 @@
                 const fallbackDate = trackDateByTitle.get(titleKey) || '';
                 return singleRow({ ...single, artistName: a.artistName, releaseDate: single.releaseDate || fallbackDate || '' });
               }).join('') : '').trim() || (topTracks.length ? topTracks.map(t => {
+                const submitting = quickRequestSubmitting.has(quickRequestKey('single', a.artistName || '', t.title || 'Track', 50000));
                 const requested = hasRequestedSignature('single', a.artistName || '', t.title || 'Track', 50000, t.spotifyUrl || a.spotifyArtistUrl || '');
                 return `
                 <div class="media-row">
@@ -1866,7 +1860,7 @@
                   </div>
                   <div class="media-stat">
                     <div class="media-num">${compact(t.plays ?? t.streams ?? null)}</div><div class="media-lbl">streams</div>
-                    <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}" ${requested ? 'disabled' : ''}>${requested ? 'Pedido enviado' : 'Pedir arte'}</button>
+                    <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
                     <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}">Subir artes</button>
                   </div>
                 </div>
@@ -1952,7 +1946,11 @@
       if (forceRefresh) setLastFullRefresh(Date.now());
       updateRefreshButtonState();
       const backendLabel = activeBackendUrl === BACKEND_LOCAL_URL ? 'local' : 'produção';
+      const skipped = Number(data.skippedArtists || 0);
       qs('lastSync').textContent = `Sincronizado ${new Date(data.fetchedAt).toLocaleString('pt-BR')} (${backendLabel})`;
+      if (skipped > 0) {
+        qs('lastSync').textContent += ` · ${skipped} artista(s) pendente(s) nesta rodada`;
+      }
     } catch (err) {
       if (cacheState?.cached?.payload) {
         renderDashboardPayload(cacheState.cached.payload);
@@ -2157,11 +2155,33 @@
     const task = artTasks.find(t => String(t.signature || '') === taskSignature(taskPayload));
     if (!task) return;
 
-    artArtistFilter = '';
-    artActiveTab = 'pending';
-    artTaskFocusId = task.id;
-    openDrawer(artDrawer);
-    renderArtTasks();
+    const submitKey = quickRequestKey(taskPayload.type, taskPayload.artistName, taskPayload.itemTitle, taskPayload.milestone);
+    if (quickRequestSubmitting.has(submitKey) || isTaskRequested(task)) {
+      artArtistFilter = '';
+      artActiveTab = task.status || 'pending';
+      artTaskFocusId = task.id;
+      openDrawer(artDrawer);
+      renderArtTasks();
+      return;
+    }
+
+    try {
+      quickRequestSubmitting.add(submitKey);
+      refreshQuickRequestButtonsInGrid();
+      await requestTaskFromTask(task);
+      saveArtTasks();
+      showToast('Pedido enviado e confirmado na agenda.', 'success');
+      artArtistFilter = '';
+      artActiveTab = 'progress';
+      artTaskFocusId = task.id;
+      openDrawer(artDrawer);
+      renderArtTasks();
+    } catch (err) {
+      alert(err.message || 'Falha ao enviar solicitação para agenda.');
+    } finally {
+      quickRequestSubmitting.delete(submitKey);
+      refreshQuickRequestButtonsInGrid();
+    }
   });
 
   setInterval(updateRefreshButtonState, 30000);
