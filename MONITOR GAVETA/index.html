@@ -1866,8 +1866,10 @@
           </div>
           <div class="art-row">
             <button class="btn sm ${requested ? 'requested' : 'dark'}" data-send-request="${esc(task.id)}" ${(requested ? 'disabled' : '')}>${requested ? 'Pedido enviado' : 'Solicitar arte'}</button>
+            ${requested ? `<button class="btn sm reset-shortcut" data-cancel-request="${esc(task.id)}">Cancelar entrega</button>` : ''}
           </div>
           <div class="art-task-meta">${requested ? 'Solicitação confirmada na agenda.' : 'Clique para enviar a solicitação para agenda.'}</div>
+          <div class="art-task-meta">Cancelamento disponível: cliente ou equipe podem cancelar esta entrega.</div>
         </div>
       </section>
     `;
@@ -1889,6 +1891,43 @@
           btn.disabled = false;
           btn.textContent = 'Solicitar arte';
           showErrorToast(err, 'Falha ao enviar solicitação para agenda.');
+        }
+      });
+    });
+
+    requestTasksList.querySelectorAll('[data-cancel-request]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-cancel-request');
+        const selectedTask = artTasks.find(t => t.id === id);
+        if (!selectedTask || !isTaskRequested(selectedTask)) return;
+
+        const confirmed = window.confirm(`Cancelar entrega de ${selectedTask.artistName || 'Artista'} - ${selectedTask.itemTitle || 'Item'}?`);
+        if (!confirmed) return;
+
+        try {
+          btn.disabled = true;
+          btn.textContent = 'Cancelando...';
+          const result = await clearGavetaRequestByTask(selectedTask);
+          if (Array.isArray(result?.requests)) {
+            remoteRequests = result.requests;
+          }
+          selectedTask.requested = false;
+          selectedTask.calendarEventId = '';
+          selectedTask.upstreamTaskId = '';
+          if (selectedTask.status !== 'done') selectedTask.status = 'pending';
+          saveArtTasks();
+
+          const warnings = Array.isArray(result?.cancellationSyncWarnings) ? result.cancellationSyncWarnings : [];
+          if (warnings.length) {
+            showToast('Entrega cancelada no painel, mas agenda não confirmou remoção automática.', 'warn');
+          } else {
+            showToast('Entrega cancelada com sucesso.', 'success');
+          }
+          renderRequestTasks();
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Cancelar entrega';
+          showErrorToast(err, 'Não foi possível cancelar esta entrega.');
         }
       });
     });
