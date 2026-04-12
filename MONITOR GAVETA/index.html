@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Relatório dos Artistas</title>
+  <title>Painel Gaveta Produções</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
     .header-inner,.wrap{max-width:1720px;margin:0 auto;padding:0 28px}
     .header-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px}
     .brand{display:flex;align-items:center;gap:12px}
-    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#00b4d8,#1f9d8b);display:grid;place-items:center;font:800 21px/1 Syne,sans-serif;box-shadow:0 6px 22px rgba(0,180,216,.38);flex-shrink:0}
+    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#ef233c,#b10021);display:grid;place-items:center;font:800 21px/1 Syne,sans-serif;box-shadow:0 6px 22px rgba(239,35,60,.42);flex-shrink:0}
     .brand h1{margin:0;font:800 20px/1 Syne,sans-serif}
     .brand p{margin:3px 0 0;color:var(--muted);font-size:11px}
     .actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
@@ -238,9 +238,9 @@
 <header class="header">
   <div class="header-inner">
     <div class="brand">
-      <div class="mark">D</div>
+      <div class="mark">G</div>
       <div>
-        <h1>Monitoramento dos artistas</h1>
+        <h1>Painel Gaveta Produções</h1>
         <p>Spotify e YouTube para decisão rápida de arte e tráfego.</p>
       </div>
     </div>
@@ -250,7 +250,6 @@
     <div class="actions">
       <div class="chip" id="lastSync">Carregando...</div>
       <button class="btn dark" id="refreshBtn">Atualizar agora</button>
-      <button class="btn dark" id="artBtn">Artes</button>
       <button class="btn dark" id="exportBtn">Exportar lista</button>
       <button class="btn dark" id="importBtn">Importar lista</button>
       <button class="btn dark" id="manageBtn">Artistas</button>
@@ -277,7 +276,6 @@
   </div>
   <div class="menu-drawer-body">
     <button class="btn dark" id="menuRefreshBtn">Atualizar agora</button>
-    <button class="btn dark" id="menuArtBtn">🎨 Artes</button>
     <button class="btn dark" id="menuExportBtn">Exportar lista</button>
     <button class="btn dark" id="menuImportBtn">Importar lista</button>
     <button class="btn dark" id="menuManageBtn">Artistas</button>
@@ -380,9 +378,7 @@
   const STORAGE_KEY = 'gaveta-radar-v5-artists';
   const DASHBOARD_CACHE_KEY = 'gaveta-radar-v5-dashboard-cache';
   const CLOUD_SYNC_BOOTSTRAP_KEY = 'gaveta-radar-v5-cloud-bootstrap';
-  const FULL_REFRESH_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
   const BACKEND_REQUEST_TIMEOUT_MS = 20000;
-  const LAST_FULL_REFRESH_KEY = 'gaveta-radar-v5-last-full-refresh';
   const ART_TASKS_KEY = 'gaveta-radar-v5-art-tasks';
   const GAVETA_CALENDAR_ID = '054ef9390875ee8d2eafa8c85b0d6f3f76701f5aa907a1685ff7a005a12f8ebb@group.calendar.google.com';
   const TRAFFIC_COST_PER_VIEW = 0.015;
@@ -622,13 +618,11 @@
   const menuDrawer = qs('menuDrawer');
   const menuBackdrop = qs('menuBackdrop');
   const menuRefreshBtn = qs('menuRefreshBtn');
-  const menuArtBtn = qs('menuArtBtn');
   const menuExportBtn = qs('menuExportBtn');
   const menuImportBtn = qs('menuImportBtn');
   const menuManageBtn = qs('menuManageBtn');
   const menuAddBtn = qs('menuAddBtn');
   const menuCloseBtn = qs('menuCloseBtn');
-  const artBtn = qs('artBtn');
   const requestDrawer = qs('requestDrawer');
   const artDrawer = qs('artDrawer');
   const trafficDrawer = qs('trafficDrawer');
@@ -981,60 +975,14 @@
     await loadDashboard();
   }
 
-  function getLastFullRefresh() {
-    return Number(localStorage.getItem(LAST_FULL_REFRESH_KEY) || 0);
-  }
-
-  function setLastFullRefresh(ts) {
-    localStorage.setItem(LAST_FULL_REFRESH_KEY, String(ts));
-  }
-
-  function getFullRefreshRemainingMs() {
-    const elapsed = Date.now() - getLastFullRefresh();
-    return Math.max(0, FULL_REFRESH_INTERVAL_MS - elapsed);
-  }
-
-  function formatMmSs(ms) {
-    const totalSec = Math.ceil(ms / 1000);
-    const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
-    const ss = String(totalSec % 60).padStart(2, '0');
-    return `${mm}:${ss}`;
-  }
-
-  function formatRemainingLong(ms) {
-    const totalMinutes = Math.ceil(ms / 60000);
-    const days = Math.floor(totalMinutes / (24 * 60));
-    const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
-    const mins = totalMinutes % 60;
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${mins}m`;
-    return `${formatMmSs(ms)}`;
-  }
-
   function updateRefreshButtonState() {
-    const remaining = getFullRefreshRemainingMs();
-    if (remaining > 0) {
-      refreshBtn.disabled = true;
-      refreshBtn.textContent = `Geral em ${formatRemainingLong(remaining)}`;
-    } else {
-      refreshBtn.disabled = false;
-      refreshBtn.textContent = 'Atualizar geral (semanal)';
-    }
+    if (!refreshBtn) return;
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = 'Atualizar agora';
   }
 
   function confirmFullRefresh() {
-    const remaining = getFullRefreshRemainingMs();
-    if (remaining > 0) {
-      const nextDate = new Date(getLastFullRefresh() + FULL_REFRESH_INTERVAL_MS).toLocaleString('pt-BR');
-      alert(`Atualização geral bloqueada até ${nextDate}.`);
-      return false;
-    }
-
-    const confirmed = window.confirm('Atualização geral vai consumir créditos da API para TODOS os artistas. Deseja continuar?');
-    if (!confirmed) return false;
-
-    const typed = window.prompt('Digite ATUALIZAR GERAL para confirmar.');
-    return typed === 'ATUALIZAR GERAL';
+    return true;
   }
 
   function extractSpotifyId(v = '') {
@@ -2365,15 +2313,6 @@
 
     const cacheState = loadMatchingCachedDashboard(artists);
 
-    if (forceRefresh) {
-      const remaining = getFullRefreshRemainingMs();
-      if (remaining > 0) {
-        qs('lastSync').textContent = `Atualização geral disponível em ${formatRemainingLong(remaining)}`;
-        updateRefreshButtonState();
-        return;
-      }
-    }
-
     try {
       let dashboardArtists = artists;
       if (artistsToRefresh?.length) {
@@ -2392,7 +2331,6 @@
       mergeArtistIdsFromResponse(data.artists || []);
       renderDashboardPayload(data);
       saveCachedDashboard(artists, data);
-      if (forceRefresh) setLastFullRefresh(Date.now());
       updateRefreshButtonState();
       const backendLabel = activeBackendUrl === BACKEND_LOCAL_URL ? 'local' : 'produção';
       const skipped = Number(data.skippedArtists || 0);
@@ -2537,14 +2475,7 @@
   });
 
   qs('addBtn').addEventListener('click', () => openDrawer(addDrawer));
-  artBtn.addEventListener('click', () => {
-    artArtistFilter = '';
-    artTaskFocusId = '';
-    openDrawer(requestDrawer);
-    renderRequestTasks();
-  });
   qs('refreshBtn').addEventListener('click', () => {
-    if (!confirmFullRefresh()) return;
     loadDashboard({ forceRefresh: true });
   });
   qs('manageBtn').addEventListener('click', () => openDrawer(manageDrawer));
@@ -2654,14 +2585,7 @@
   menuCloseBtn.addEventListener('click', closeMenuDrawer);
   menuAddBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(addDrawer); });
   menuManageBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(manageDrawer); });
-  menuArtBtn.addEventListener('click', () => {
-    closeMenuDrawer();
-    artArtistFilter = '';
-    artTaskFocusId = '';
-    openDrawer(requestDrawer);
-    renderRequestTasks();
-  });
-  menuRefreshBtn.addEventListener('click', () => { closeMenuDrawer(); if (confirmFullRefresh()) loadDashboard({ forceRefresh: true }); });
+  menuRefreshBtn.addEventListener('click', () => { closeMenuDrawer(); loadDashboard({ forceRefresh: true }); });
   menuExportBtn.addEventListener('click', () => { closeMenuDrawer(); exportArtists(); });
   menuImportBtn.addEventListener('click', () => { closeMenuDrawer(); qs('importInput').click(); });
 
