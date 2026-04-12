@@ -615,10 +615,26 @@
     return [type || '', artistName || '', itemTitle || '', Number(milestone || 0)].join('|').toLowerCase();
   }
 
+  function taskLooseSignatureFromParts(type, artistName, itemTitle) {
+    return [type || '', artistName || '', itemTitle || ''].join('|').toLowerCase();
+  }
+
   function hasRequestedSignature(type, artistName, itemTitle, milestone) {
     const signature = taskSignatureFromParts(type, artistName, itemTitle, milestone);
-    const local = artTasks.some(task => String(task.signature || '') === signature && isTaskRequested(task));
-    const remote = remoteRequests.some(req => String(req.signature || '') === signature);
+    const loose = taskLooseSignatureFromParts(type, artistName, itemTitle);
+
+    const local = artTasks.some(task => {
+      const exact = String(task.signature || '') === signature;
+      const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
+      return (exact || looseTask) && isTaskRequested(task);
+    });
+
+    const remote = remoteRequests.some(req => {
+      const exact = String(req.signature || '') === signature;
+      const looseReq = taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle) === loose;
+      return exact || looseReq;
+    });
+
     return local || remote;
   }
 

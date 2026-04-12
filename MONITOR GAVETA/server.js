@@ -55,6 +55,35 @@ function gavetaTaskSignature(task = {}) {
     .toLowerCase();
 }
 
+function formatPtNumber(value) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return n.toLocaleString('pt-BR');
+}
+
+function buildAgendaBriefing(task = {}) {
+  const type = String(task.type || 'manual').toLowerCase();
+  const artist = String(task.artistName || '').trim() || 'Artista';
+  const itemTitle = String(task.itemTitle || '').trim() || 'Item';
+  const sourceUrl = String(task.sourceUrl || '').trim();
+  const note = String(task.note || '').trim();
+  const metricLabel = String(task.metricLabel || '').trim();
+  const milestone = formatPtNumber(task.milestone);
+  const current = formatPtNumber(task.currentValue);
+
+  const baseMetric = type === 'youtube' ? 'Visualizacoes no YouTube' : 'Plays no Spotify';
+  const kind = type === 'youtube' ? 'video' : 'single';
+  const targetText = milestone || 'meta definida';
+
+  const summary = `Fazer Arte de ${targetText} ${baseMetric} no ${kind} (${itemTitle}) do (${artist}).`;
+  const lines = [summary];
+  if (metricLabel) lines.push(`Metrica: ${metricLabel}`);
+  if (current) lines.push(`Atual: ${current}`);
+  if (sourceUrl) lines.push(`Link origem: ${sourceUrl}`);
+  if (note) lines.push(`Briefing: ${note}`);
+  return lines.join('\n');
+}
+
 async function readGavetaRequestsStore() {
   try {
     const raw = await fs.readFile(GAVETA_REQUESTS_STORE_PATH, 'utf8');
@@ -1034,7 +1063,7 @@ app.post('/api/gaveta/requests', async (req, res) => {
         action: 'createTask',
         artist: artistName,
         title: itemTitle,
-        description: String(task.metricLabel || 'Solicitacao de arte pelo painel'),
+        description: buildAgendaBriefing(task),
         priority,
         dueDate,
         createCalendar: true,
