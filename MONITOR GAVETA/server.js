@@ -62,6 +62,12 @@ function formatPtNumber(value) {
   return n.toLocaleString('pt-BR');
 }
 
+function formatPtCurrency(value) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function buildAgendaBriefing(task = {}) {
   const type = String(task.type || 'manual').toLowerCase();
   const artist = String(task.artistName || '').trim() || 'Artista';
@@ -71,6 +77,18 @@ function buildAgendaBriefing(task = {}) {
   const metricLabel = String(task.metricLabel || '').trim();
   const milestone = formatPtNumber(task.milestone);
   const current = formatPtNumber(task.currentValue);
+  const trafficBudget = formatPtCurrency(task.trafficBudget);
+  const trafficViewsTarget = formatPtNumber(task.trafficViewsTarget || task.milestone);
+
+  if (type === 'traffic') {
+    const summaryTraffic = `Rodar tráfego para vídeo (${itemTitle}) do (${artist}).`;
+    const trafficLines = [summaryTraffic];
+    if (trafficViewsTarget) trafficLines.push(`Meta de visualizações: ${trafficViewsTarget}`);
+    if (trafficBudget) trafficLines.push(`Valor para boleto: ${trafficBudget}`);
+    if (sourceUrl) trafficLines.push(`Link origem: ${sourceUrl}`);
+    if (note) trafficLines.push(`Briefing: ${note}`);
+    return trafficLines.join('\n');
+  }
 
   const baseMetric = type === 'youtube' ? 'Visualizacoes no YouTube' : 'Plays no Spotify';
   const kind = type === 'youtube' ? 'video' : 'single';

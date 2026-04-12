@@ -258,14 +258,6 @@
 <main class="wrap">
   <div class="layout">
     <section class="left-col">
-
-      <div id="trafficSection" class="traffic-section hidden">
-        <div class="traffic-head">
-          <h2>Rodar tráfego agora</h2>
-          <span class="traffic-badge" id="trafficCount">0</span>
-        </div>
-        <div id="trafficList"></div>
-      </div>
       <div class="artist-grid" id="artistGrid"></div>
       <div class="footer-note">Painel de acompanhamento e solicitação criativa.</div>
     </section>
@@ -356,6 +348,29 @@
   </div>
 </aside>
 
+<aside class="drawer hidden" id="trafficDrawer">
+  <div class="drawer-head">
+    <h3>Solicitar Tráfego</h3>
+    <p>Defina valor de investimento e meta de visualizações para o vídeo.</p>
+  </div>
+  <div class="drawer-body">
+    <div class="hint" id="trafficSummary">Selecione um vídeo com baixa visualização para iniciar.</div>
+    <div class="field">
+      <label>Investimento (R$)</label>
+      <input class="input" id="trafficBudgetInput" placeholder="Ex.: 50,00">
+    </div>
+    <div class="field">
+      <label>Meta de visualizações</label>
+      <input class="input" id="trafficViewsInput" placeholder="Ex.: 5.000">
+    </div>
+    <div class="hint" id="trafficEstimateHint">Preencha um dos campos para calcular o outro automaticamente.</div>
+    <button class="btn red" id="trafficSendBtn">Enviar solicitação de tráfego</button>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn dark" id="closeTraffic">Fechar</button>
+  </div>
+</aside>
+
 <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
 
 <script>
@@ -368,6 +383,7 @@
   const LAST_FULL_REFRESH_KEY = 'gaveta-radar-v5-last-full-refresh';
   const ART_TASKS_KEY = 'gaveta-radar-v5-art-tasks';
   const GAVETA_CALENDAR_ID = '054ef9390875ee8d2eafa8c85b0d6f3f76701f5aa907a1685ff7a005a12f8ebb@group.calendar.google.com';
+  const TRAFFIC_VIEWS_PER_REAL = 100;
 
   function initialBackendUrl() {
     const forced = new URLSearchParams(window.location.search).get('api');
@@ -582,7 +598,9 @@
   const menuCloseBtn = qs('menuCloseBtn');
   const artBtn = qs('artBtn');
   const artDrawer = qs('artDrawer');
+  const trafficDrawer = qs('trafficDrawer');
   const closeArtBtn = qs('closeArt');
+  const closeTrafficBtn = qs('closeTraffic');
   const artPendingCount = qs('artPendingCount');
   const artForecastList = qs('artForecastList');
   const artTasksList = qs('artTasksList');
@@ -595,6 +613,11 @@
   const artTabDone = qs('artTabDone');
   const artAddManualBtn = qs('artAddManualBtn');
   const resetRequestsBtn = qs('resetRequestsBtn');
+  const trafficBudgetInput = qs('trafficBudgetInput');
+  const trafficViewsInput = qs('trafficViewsInput');
+  const trafficSendBtn = qs('trafficSendBtn');
+  const trafficSummary = qs('trafficSummary');
+  const trafficEstimateHint = qs('trafficEstimateHint');
   const formError = qs('formError');
   const refreshBtn = qs('refreshBtn');
   const toastWrap = qs('toastWrap');
@@ -603,10 +626,12 @@
   const uploadStates = new Map();
   const quickRequestSubmitting = new Set();
   let remoteRequests = [];
-  const requestSubmittingIds = new Set();
+  const trafficSubmittingBySource = new Set();
   let artActiveTab = 'pending';
   let artArtistFilter = '';
   let artTaskFocusId = '';
+  let trafficDraft = null;
+  let trafficInputLock = false;
 
   function showToast(message, type = 'info') {
     if (!toastWrap || !message) return;
@@ -654,6 +679,63 @@
     } catch {
       return raw.toLowerCase();
     }
+  }
+
+  function parseBrCurrencyInput(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return 0;
+    const normalized = raw.replace(/\./g, '').replace(',', '.').replace(/[^0-9.]/g, '');
+    const n = Number(normalized);
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+  }
+
+  function parseViewsInput(text) {
+    const raw = String(text || '').trim().replace(/[^0-9]/g, '');
+    const n = Number(raw || 0);
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  }
+
+  function formatBrCurrency(value) {
+    const n = Number(value || 0);
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatViews(value) {
+    const n = Number(value || 0);
+    return n.toLocaleString('pt-BR');
+  }
+
+  function updateTrafficEstimateHint(budget, views) {
+    if (!trafficEstimateHint) return;
+    if (!budget && !views) {
+      trafficEstimateHint.textContent = 'Preencha um dos campos para calcular o outro automaticamente.';
+      return;
+    }
+    trafficEstimateHint.textContent = `Estimativa: ${formatBrCurrency(budget)} para aproximadamente ${formatViews(views)} visualizações.`;
+  }
+
+  function fillTrafficByBudget(budget) {
+    const b = Math.max(0, Number(budget || 0));
+    const views = Math.round(b * TRAFFIC_VIEWS_PER_REAL);
+    if (trafficBudgetInput) trafficBudgetInput.value = b ? b.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    if (trafficViewsInput) trafficViewsInput.value = views ? formatViews(views) : '';
+    updateTrafficEstimateHint(b, views);
+  }
+
+  function fillTrafficByViews(views) {
+    const v = Math.max(0, Number(views || 0));
+    const budget = v / TRAFFIC_VIEWS_PER_REAL;
+    if (trafficViewsInput) trafficViewsInput.value = v ? formatViews(v) : '';
+    if (trafficBudgetInput) trafficBudgetInput.value = budget ? budget.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    updateTrafficEstimateHint(budget, v);
+  }
+
+  function setTrafficSubmitting(sourceUrl, on) {
+    const key = normalizeSourceUrl(sourceUrl);
+    if (!key) return;
+    if (on) trafficSubmittingBySource.add(key);
+    else trafficSubmittingBySource.delete(key);
+    refreshQuickRequestButtonsInGrid();
   }
 
   function hasRequestedSignature(type, artistName, itemTitle, milestone, sourceUrl) {
@@ -1196,6 +1278,46 @@
     return data;
   }
 
+  async function requestTrafficFromDraft(draft) {
+    if (!draft) throw new Error('Video não selecionado para tráfego.');
+    const budget = Number(draft.budget || 0);
+    const viewsTarget = Number(draft.viewsTarget || 0);
+    if (!budget || !viewsTarget) {
+      throw new Error('Preencha investimento e meta de visualizações.');
+    }
+
+    const taskPayload = {
+      id: `traffic-${Date.now()}`,
+      type: 'traffic',
+      artistName: draft.artistName || 'Artista',
+      itemTitle: draft.videoTitle || 'Video',
+      metricLabel: 'Visualizações de tráfego',
+      currentValue: Number(draft.currentViews || 0),
+      milestone: viewsTarget,
+      sourceUrl: draft.sourceUrl || '',
+      coverUrl: draft.coverUrl || '',
+      demandStatus: 'do',
+      trafficBudget: budget,
+      trafficViewsTarget: viewsTarget,
+      note: `Valor para boleto: ${formatBrCurrency(budget)} | Meta de visualizações: ${formatViews(viewsTarget)}`,
+    };
+
+    ensureAutoTask(taskPayload);
+    const task = artTasks.find(t => String(t.signature || '') === taskSignature(taskPayload)) || taskPayload;
+    const data = await createGavetaRequest(task);
+    if (!data?.request?.calendarEventId) {
+      throw new Error('Agenda nao confirmou o evento de tráfego.');
+    }
+
+    if (task && task !== taskPayload) {
+      task.requested = true;
+      if (task.status === 'pending') task.status = 'progress';
+      task.calendarEventId = data.request.calendarEventId;
+    }
+
+    return data;
+  }
+
   function saveArtTasks() {
     localStorage.setItem(ART_TASKS_KEY, JSON.stringify(artTasks));
     renderArtIndicators();
@@ -1515,7 +1637,6 @@
     }
 
     function renderTaskCard(task) {
-      const submitting = requestSubmittingIds.has(task.id);
       const requested = isTaskRequested(task);
       return `
       <div class="art-task">
@@ -1551,12 +1672,8 @@
           </div>
           <div class="upload-progress"><div class="upload-progress-fill" data-upload-fill style="width:0%"></div></div>
         </div>
-        <div class="art-task-meta">Status do pedido: ${requested ? 'pedido enviado para agenda' : (submitting ? 'enviando solicitacao para agenda...' : 'aguardando envio')}</div>
+        <div class="art-task-meta">Status do pedido: ${requested ? 'pedido enviado para agenda' : 'aguardando envio'}</div>
         <div class="art-task-meta">Use o botao Pedir arte no painel para solicitar em 1 clique.</div>
-        <div class="art-row">
-          <button class="btn red sm" data-submit-request="${esc(task.id)}" ${requested || submitting ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Enviar solicitação')}</button>
-          ${task.driveUrl ? `<a class="btn requested sm" href="${esc(task.driveUrl)}" target="_blank" rel="noopener">Arte disponivel</a>` : ''}
-        </div>
         ${task.driveUrl ? `<div class="art-row"><a class="btn requested sm" href="${esc(task.driveUrl)}" target="_blank" rel="noopener">Arte disponivel</a><button class="btn dark sm" data-copy-drive="${esc(task.id)}">Copiar link</button></div>` : ''}
       </div>
     `;
@@ -1572,27 +1689,6 @@
         artTaskFocusId = task.id;
         artActiveTab = task.status || 'pending';
         renderArtTasks();
-      });
-    });
-
-    artTasksList.querySelectorAll('[data-submit-request]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-submit-request');
-        const task = artTasks.find(t => t.id === id);
-        if (!task || isTaskRequested(task) || requestSubmittingIds.has(id)) return;
-
-        try {
-          requestSubmittingIds.add(id);
-          renderArtTasks();
-          await requestTaskFromTask(task);
-          saveArtTasks();
-          showToast('Pedido enviado e confirmado na agenda.', 'success');
-        } catch (err) {
-          alert(err.message || 'Falha ao enviar solicitação para agenda.');
-        } finally {
-          requestSubmittingIds.delete(id);
-          renderArtTasks();
-        }
       });
     });
 
@@ -1671,6 +1767,7 @@
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
     artDrawer.classList.add('hidden');
+    trafficDrawer.classList.add('hidden');
     w.classList.remove('hidden');
   }
 
@@ -1679,6 +1776,7 @@
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
     artDrawer.classList.add('hidden');
+    trafficDrawer.classList.add('hidden');
     formError.classList.add('hidden');
     formError.textContent = '';
   }
@@ -1714,6 +1812,8 @@
     const section = qs('trafficSection');
     const list = qs('trafficList');
     const badge = qs('trafficCount');
+
+    if (!section || !list || !badge) return;
 
     if (!alerts || !alerts.length) {
       section.classList.add('hidden');
@@ -1770,6 +1870,8 @@
     const milestone = Number(demand.currentTarget || 0);
     const submitting = quickRequestSubmitting.has(quickRequestKey('youtube', v.artistName || '', v.title || 'Video', milestone));
     const requested = hasRequestedSignature('youtube', v.artistName || '', v.title || 'Video', milestone, v.youtubeUrl || '');
+    const trafficRequested = hasRequestedSignature('traffic', v.artistName || '', v.title || 'Video', 0, v.youtubeUrl || '');
+    const trafficSubmitting = trafficSubmittingBySource.has(normalizeSourceUrl(v.youtubeUrl || ''));
     return `
       <div class="media-row">
         <a href="${esc(v.youtubeUrl || '#')}" target="_blank" rel="noopener" title="Abrir no YouTube">
@@ -1778,13 +1880,14 @@
         <div class="media-info">
           <div class="media-title"><a href="${esc(v.youtubeUrl || '#')}" target="_blank" rel="noopener">${esc(v.title || 'Video')}</a></div>
           <div class="media-date">${fmtDate(v.publishedAt) || 'sem data'}${v.daysOld < 999 ? ` · ${v.daysOld}d` : ''}</div>
-          ${v.needsTraffic ? '<span class="traffic-tag">RODAR TRÁFEGO</span>' : ''}
+          ${v.needsTraffic ? '<span class="traffic-tag">TRAFEGO RECOMENDADO</span>' : ''}
           ${demand.status !== 'idle' ? `<span class="priority-dot ${esc(demand.status === 'do' ? 'priority-do' : 'priority-queue')}" title="${demand.status === 'do' ? 'Fazer arte' : 'Na fila'}"></span>` : ''}
         </div>
         <div class="media-stat">
           <div class="media-num">${compact(v.views)}</div>
           <div class="media-lbl">views</div>
           <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
+          ${v.needsTraffic ? `<button class="btn sm ${trafficRequested ? 'requested' : 'dark'}" data-quick-traffic="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-current="${Number(v.views || 0)}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(trafficRequested || trafficSubmitting) ? 'disabled' : ''}>${trafficRequested ? 'Tráfego solicitado' : (trafficSubmitting ? 'Enviando...' : 'Rodar tráfego')}</button>` : ''}
           <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}">Subir artes</button>
         </div>
       </div>
@@ -1910,7 +2013,8 @@
     if (!artists.length) {
       qs('artistGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">Cadastre artistas para iniciar o monitoramento.</div>';
       renderArtForecast();
-      qs('trafficSection').classList.add('hidden');
+      const trafficSection = qs('trafficSection');
+      if (trafficSection) trafficSection.classList.add('hidden');
       return;
     }
 
@@ -1992,6 +2096,97 @@
     loadDashboard({ artistsToRefresh: [newArtist] });
   }
 
+  function openTrafficDrawerForVideo(draft) {
+    trafficDraft = {
+      artistName: draft.artistName || 'Artista',
+      videoTitle: draft.videoTitle || 'Video',
+      currentViews: Number(draft.currentViews || 0),
+      sourceUrl: draft.sourceUrl || '',
+      coverUrl: draft.coverUrl || '',
+      budget: Number(draft.budget || 0),
+      viewsTarget: Number(draft.viewsTarget || 0),
+    };
+
+    if (trafficSummary) {
+      trafficSummary.textContent = `${trafficDraft.artistName} · ${trafficDraft.videoTitle} · Atual ${formatViews(trafficDraft.currentViews)} views`;
+    }
+
+    if (trafficDraft.budget > 0) {
+      fillTrafficByBudget(trafficDraft.budget);
+    } else if (trafficDraft.viewsTarget > 0) {
+      fillTrafficByViews(trafficDraft.viewsTarget);
+    } else {
+      fillTrafficByBudget(50);
+    }
+
+    openDrawer(trafficDrawer);
+  }
+
+  trafficBudgetInput?.addEventListener('input', () => {
+    if (trafficInputLock) return;
+    trafficInputLock = true;
+    const budget = parseBrCurrencyInput(trafficBudgetInput.value);
+    fillTrafficByBudget(budget);
+    if (trafficDraft) {
+      trafficDraft.budget = budget;
+      trafficDraft.viewsTarget = Math.round(budget * TRAFFIC_VIEWS_PER_REAL);
+    }
+    trafficInputLock = false;
+  });
+
+  trafficViewsInput?.addEventListener('input', () => {
+    if (trafficInputLock) return;
+    trafficInputLock = true;
+    const views = parseViewsInput(trafficViewsInput.value);
+    fillTrafficByViews(views);
+    if (trafficDraft) {
+      trafficDraft.viewsTarget = views;
+      trafficDraft.budget = views / TRAFFIC_VIEWS_PER_REAL;
+    }
+    trafficInputLock = false;
+  });
+
+  trafficSendBtn?.addEventListener('click', async () => {
+    if (!trafficDraft) {
+      alert('Selecione um vídeo para solicitar tráfego.');
+      return;
+    }
+
+    const sourceKey = normalizeSourceUrl(trafficDraft.sourceUrl);
+    if (sourceKey && trafficSubmittingBySource.has(sourceKey)) return;
+
+    const budget = parseBrCurrencyInput(trafficBudgetInput?.value || '');
+    const viewsTarget = parseViewsInput(trafficViewsInput?.value || '');
+    if (!budget || !viewsTarget) {
+      alert('Preencha investimento e meta de visualizações.');
+      return;
+    }
+
+    trafficDraft.budget = budget;
+    trafficDraft.viewsTarget = viewsTarget;
+
+    try {
+      setTrafficSubmitting(trafficDraft.sourceUrl, true);
+      if (trafficSendBtn) {
+        trafficSendBtn.disabled = true;
+        trafficSendBtn.textContent = 'Enviando...';
+      }
+      await requestTrafficFromDraft(trafficDraft);
+      showToast('Solicitação de tráfego enviada para agenda.', 'success');
+      closeDrawers();
+      await refreshRemoteRequests();
+      await loadDashboard();
+    } catch (err) {
+      alert(err.message || 'Falha ao enviar solicitação de tráfego.');
+    } finally {
+      setTrafficSubmitting(trafficDraft.sourceUrl, false);
+      if (trafficSendBtn) {
+        trafficSendBtn.disabled = false;
+        trafficSendBtn.textContent = 'Enviar solicitação de tráfego';
+      }
+    }
+  });
+
   qs('addBtn').addEventListener('click', () => openDrawer(addDrawer));
   artBtn.addEventListener('click', () => {
     artArtistFilter = '';
@@ -2007,6 +2202,7 @@
   qs('closeAdd').addEventListener('click', closeDrawers);
   qs('closeManage').addEventListener('click', closeDrawers);
   closeArtBtn.addEventListener('click', closeDrawers);
+  closeTrafficBtn?.addEventListener('click', closeDrawers);
   backdrop.addEventListener('click', closeDrawers);
   qs('saveArtist').addEventListener('click', saveArtist);
 
@@ -2104,6 +2300,18 @@
   menuImportBtn.addEventListener('click', () => { closeMenuDrawer(); qs('importInput').click(); });
 
   qs('artistGrid').addEventListener('click', async (event) => {
+    const trafficBtn = event.target.closest('[data-quick-traffic]');
+    if (trafficBtn) {
+      openTrafficDrawerForVideo({
+        artistName: trafficBtn.getAttribute('data-artist') || 'Artista',
+        videoTitle: trafficBtn.getAttribute('data-title') || 'Video',
+        currentViews: Number(trafficBtn.getAttribute('data-current') || 0),
+        sourceUrl: trafficBtn.getAttribute('data-source') || '',
+        coverUrl: trafficBtn.getAttribute('data-cover') || '',
+      });
+      return;
+    }
+
     const uploadBtn = event.target.closest('[data-quick-upload]');
     if (uploadBtn) {
       const taskPayload = {
