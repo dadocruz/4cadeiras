@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Gaveta Produções</title>
+  <title>Relatório dos Artistas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,16 +25,14 @@
     .header-inner,.wrap{max-width:1720px;margin:0 auto;padding:0 28px}
     .header-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px}
     .brand{display:flex;align-items:center;gap:12px}
-    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#ef233c,#b10021);display:grid;place-items:center;font:800 21px/1 Syne,sans-serif;box-shadow:0 6px 22px rgba(239,35,60,.42);flex-shrink:0}
+    .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#00b4d8,#1f9d8b);display:grid;place-items:center;font:800 21px/1 Syne,sans-serif;box-shadow:0 6px 22px rgba(0,180,216,.38);flex-shrink:0}
     .brand h1{margin:0;font:800 20px/1 Syne,sans-serif}
     .brand p{margin:3px 0 0;color:var(--muted);font-size:11px}
     .actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
     .chip{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--muted);font-size:11px;white-space:nowrap}
     .btn{border:0;border-radius:11px;padding:10px 16px;font-weight:800;font-size:13px;cursor:pointer;transition:.14s}
     .btn:hover{transform:translateY(-1px);filter:brightness(1.12)}
-    .btn:disabled{opacity:.55;cursor:not-allowed;filter:none;transform:none}
     .btn.red{background:#ef233c;color:#fff;box-shadow:0 5px 18px rgba(239,35,60,.38)}
-    .btn.orange{background:rgba(255,107,0,.2);border:1px solid rgba(255,107,0,.45);color:#ffd8b8}
     .btn.dark{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--line2)}
     .btn.sm{padding:6px 11px;font-size:12px;border-radius:9px}
     .menu-toggle{display:none;align-items:center;justify-content:center;gap:8px;min-width:42px;height:42px;padding:0 12px}
@@ -53,7 +51,7 @@
     .menu-drawer-footer .btn{flex:1}
 
     .wrap{padding-top:20px;padding-bottom:40px}
-    .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:18px;align-items:start}
     .left-col{min-width:0;display:flex;flex-direction:column;gap:20px}
 
     .traffic-section{display:flex;flex-direction:column;gap:10px}
@@ -75,7 +73,7 @@
     .section-head h2{margin:0 0 3px;font:800 21px/1 Syne,sans-serif}
     .section-head p{margin:0;color:var(--muted);font-size:12px}
 
-    .artist-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    .artist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
     .card{background:linear-gradient(180deg,rgba(255,255,255,.038),rgba(255,255,255,.014));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
     .artist-card{overflow:hidden}
 
@@ -111,22 +109,19 @@
     .up{color:#6ddf9e} .dn{color:#ff8fa3} .neu{color:var(--soft)}
 
     .media-list{display:grid;gap:0}
-    .media-row{display:grid;grid-template-columns:56px 1fr auto;gap:9px;align-items:start;padding:9px 13px;border-top:1px solid var(--line);transition:.12s}
+    .media-row{display:grid;grid-template-columns:50px 1fr auto;gap:9px;align-items:center;padding:9px 13px;border-top:1px solid var(--line);transition:.12s}
     .media-row:hover{background:rgba(255,255,255,.03)}
-    .media-thumb{width:56px;height:56px;border-radius:9px;object-fit:cover;background:#1a1a1a;flex-shrink:0}
-    .media-thumb.single-thumb{width:64px;height:64px;border-radius:10px}
-    .media-thumb.yt-thumb{height:34px;border-radius:7px}
+    .media-thumb{width:50px;height:50px;border-radius:8px;object-fit:cover;background:#1a1a1a;flex-shrink:0}
+    .media-thumb.yt-thumb{height:30px;border-radius:6px}
     .media-info{min-width:0}
     .media-title{font-size:12px;font-weight:700;line-height:1.3;margin:0 0 2px;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .media-title a:hover{text-decoration:underline;opacity:.8}
     .media-date{font-size:10px;color:var(--muted)}
     .media-stat{text-align:right;flex-shrink:0;padding-left:6px}
-    .media-actions{grid-column:1 / -1;display:flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:5px;max-width:100%}
-    .media-actions .btn.sm{padding:2px 6px;font-size:9px;border-radius:7px;white-space:nowrap;line-height:1.05}
-    .media-row.single-row{grid-template-columns:64px 1fr auto}
     .media-num{font:800 14px/1 Syne,sans-serif;white-space:nowrap}
     .media-lbl{font-size:9px;color:var(--soft);margin-top:2px}
     .no-data{font-size:10px;color:var(--soft);font-style:italic}
+    .traffic-tag{display:inline-block;background:rgba(255,107,0,.18);border:1px solid rgba(255,107,0,.4);color:#ff9a50;font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;margin-top:3px;letter-spacing:.06em}
     .demand-do{background:rgba(65,211,125,.15);border:1px solid rgba(65,211,125,.45);color:#86efac}
     .demand-queue{background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.45);color:#ffe585}
     .art-task{padding:11px 12px;border-top:1px solid var(--line);display:grid;gap:8px}
@@ -149,14 +144,12 @@
     .upload-progress{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
     .upload-progress-fill{height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#1db954,#8cc8ff);transition:width .12s linear}
     .btn.requested{background:rgba(65,211,125,.2);border:1px solid rgba(65,211,125,.45);color:#c5f8d9}
-    .btn.upload-shortcut{background:rgba(35,151,239,.2);border:1px solid rgba(35,151,239,.45);color:#d4ecff}
-    .btn.reset-shortcut{background:rgba(255,80,80,.14);border:1px solid rgba(255,80,80,.36);color:#ffd0d0}
     .task-group{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02)}
     .task-group-title{padding:10px 12px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
     .task-group-title.requested{color:#86efac}
     .task-group-title.pending{color:#ffcf80}
 
-    .ranking{display:none}
+    .ranking{position:sticky;top:88px}
     .ranking .inner{padding:16px}
     .ranking h3{margin:0 0 3px;font:800 18px/1 Syne,sans-serif}
     .rank-desc{margin:0 0 13px;color:var(--muted);font-size:11px;line-height:1.4}
@@ -211,15 +204,9 @@
     .auth-input{flex:1;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:#12121a;color:#fff;outline:none}
     .auth-input:focus{border-color:var(--line2)}
     .auth-error{margin-top:10px;color:#ff9cab;font-size:12px;min-height:16px}
-    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:130;display:grid;gap:8px;max-width:min(92vw,360px)}
-    .toast{padding:11px 12px;border-radius:12px;border:1px solid var(--line2);background:rgba(12,12,16,.95);font-size:12px;line-height:1.4;box-shadow:0 12px 28px rgba(0,0,0,.32)}
-    .toast.success{border-color:rgba(134,239,172,.45);color:#d9fbe6}
-    .toast.error{border-color:rgba(255,153,171,.5);color:#ffd3db}
-    .toast.info{border-color:rgba(140,200,255,.45);color:#d7ebff}
 
-    @media(max-width:1700px){.artist-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    @media(max-width:1200px){.artist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:980px){.layout{grid-template-columns:1fr}.artist-grid{grid-template-columns:1fr}}
+    @media(max-width:1500px){.artist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}.ranking{position:static}.artist-grid{grid-template-columns:1fr}}
     @media(max-width:720px){
       .header-inner,.wrap{padding-left:14px;padding-right:14px}
       .artist-grid{grid-template-columns:1fr}
@@ -238,9 +225,9 @@
 <header class="header">
   <div class="header-inner">
     <div class="brand">
-      <div class="mark">G</div>
+      <div class="mark">D</div>
       <div>
-        <h1>Painel Gaveta Produções</h1>
+        <h1>Monitoramento dos artistas</h1>
         <p>Spotify e YouTube para decisão rápida de arte e tráfego.</p>
       </div>
     </div>
@@ -250,6 +237,7 @@
     <div class="actions">
       <div class="chip" id="lastSync">Carregando...</div>
       <button class="btn dark" id="refreshBtn">Atualizar agora</button>
+      <button class="btn dark" id="artBtn">Artes <span id="artPendingCount">0</span></button>
       <button class="btn dark" id="exportBtn">Exportar lista</button>
       <button class="btn dark" id="importBtn">Importar lista</button>
       <button class="btn dark" id="manageBtn">Artistas</button>
@@ -262,9 +250,27 @@
 <main class="wrap">
   <div class="layout">
     <section class="left-col">
+
+      <div id="trafficSection" class="traffic-section hidden">
+        <div class="traffic-head">
+          <h2>Rodar tráfego agora</h2>
+          <span class="traffic-badge" id="trafficCount">0</span>
+        </div>
+        <div id="trafficList"></div>
+      </div>
       <div class="artist-grid" id="artistGrid"></div>
-      <div class="footer-note">Painel de acompanhamento e solicitação criativa.</div>
+      <div class="footer-note">By Dado Cruz.</div>
     </section>
+
+    <aside class="ranking">
+      <div class="card">
+        <div class="inner">
+          <h3>Previsão de Artes</h3>
+          <p class="rank-desc">Ordem de demanda por crescimento dos artistas cadastrados.</p>
+          <div class="rank-list" id="artForecastList"></div>
+        </div>
+      </div>
+    </aside>
   </div>
 </main>
 
@@ -276,6 +282,7 @@
   </div>
   <div class="menu-drawer-body">
     <button class="btn dark" id="menuRefreshBtn">Atualizar agora</button>
+    <button class="btn dark" id="menuArtBtn">🎨 Artes</button>
     <button class="btn dark" id="menuExportBtn">Exportar lista</button>
     <button class="btn dark" id="menuImportBtn">Importar lista</button>
     <button class="btn dark" id="menuManageBtn">Artistas</button>
@@ -286,26 +293,37 @@
   </div>
 </aside>
 
-<aside class="drawer hidden" id="requestDrawer">
-  <div class="drawer-head">
-    <h3>Solicitações de Arte</h3>
-    <p>Painel de solicitação: enviar para agenda e acompanhar confirmação.</p>
-  </div>
-  <div class="drawer-body">
-    <div id="requestTasksList" class="media-list"></div>
-  </div>
-  <div class="drawer-footer">
-    <button class="btn dark" id="closeRequest">Fechar</button>
-  </div>
-</aside>
-
 <aside class="drawer hidden" id="artDrawer">
   <div class="drawer-head">
-    <h3>Entregas de Arte</h3>
-    <p>Painel de entrega: subir artes no Drive e compartilhar com o cliente.</p>
+    <h3>Gestão de Artes</h3>
+    <p>Controle de entregas por metas: singles, ouvintes mensais e vídeos.</p>
   </div>
   <div class="drawer-body">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn dark sm" id="artTabPending">Pendentes</button>
+      <button class="btn dark sm" id="artTabProgress">Em andamento</button>
+      <button class="btn dark sm" id="artTabReady">Prontas</button>
+      <button class="btn dark sm" id="artTabDone">Entregues</button>
+      <button class="btn red sm" id="artAddManualBtn">+ Arte manual</button>
+    </div>
+    <div class="flow-row" style="margin-top:10px">
+      <span class="status-pill status-pending">Solicitada</span>
+      <span class="flow-arrow">-></span>
+      <span class="status-pill status-progress">Producao</span>
+      <span class="flow-arrow">-></span>
+      <span class="status-pill status-ready">Pronta</span>
+      <span class="flow-arrow">-></span>
+      <span class="status-pill status-done">Entregue</span>
+    </div>
     <div id="artTasksList" class="media-list"></div>
+    <div class="gaveta-board">
+      <div class="traffic-head" style="margin-bottom:8px">
+        <h2>Solicitações da Gaveta</h2>
+        <span class="traffic-badge" id="gavetaRequestCount">0</span>
+      </div>
+      <div class="gaveta-meta" id="uploadReport">Relatório de uploads: 0 artes · 0 arquivos</div>
+      <div id="gavetaRequestsList"></div>
+    </div>
   </div>
   <div class="drawer-footer">
     <button class="btn dark" id="closeArt">Fechar</button>
@@ -347,41 +365,16 @@
   </div>
 </aside>
 
-<aside class="drawer hidden" id="trafficDrawer">
-  <div class="drawer-head">
-    <h3>Rodar Tráfego</h3>
-    <p>Defina a meta de visualizações e veja o valor estimado automaticamente.</p>
-  </div>
-  <div class="drawer-body">
-    <div class="hint" id="trafficSummary">Selecione um vídeo com baixa visualização para iniciar.</div>
-    <div class="field">
-      <label>Meta de visualizações</label>
-      <input class="input" id="trafficViewsInput" placeholder="Ex.: 5.000">
-    </div>
-    <div class="field">
-      <label>Investimento (R$)</label>
-      <input class="input" id="trafficBudgetInput" placeholder="Estimado automaticamente" readonly>
-    </div>
-    <div class="hint" id="trafficEstimateHint">Digite a meta de visualizações para calcular o valor estimado.</div>
-    <button class="btn red" id="trafficSendBtn">Enviar solicitação de tráfego</button>
-  </div>
-  <div class="drawer-footer">
-    <button class="btn dark" id="closeTraffic">Fechar</button>
-  </div>
-</aside>
-
-<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
-
 <script>
   const BACKEND_PROD_URL = 'https://gaveta-monitor.onrender.com';
   const BACKEND_LOCAL_URL = 'http://localhost:3000';
   const STORAGE_KEY = 'gaveta-radar-v5-artists';
   const DASHBOARD_CACHE_KEY = 'gaveta-radar-v5-dashboard-cache';
   const CLOUD_SYNC_BOOTSTRAP_KEY = 'gaveta-radar-v5-cloud-bootstrap';
-  const BACKEND_REQUEST_TIMEOUT_MS = 20000;
+  const FULL_REFRESH_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+  const LAST_FULL_REFRESH_KEY = 'gaveta-radar-v5-last-full-refresh';
   const ART_TASKS_KEY = 'gaveta-radar-v5-art-tasks';
   const GAVETA_CALENDAR_ID = '054ef9390875ee8d2eafa8c85b0d6f3f76701f5aa907a1685ff7a005a12f8ebb@group.calendar.google.com';
-  const TRAFFIC_COST_PER_VIEW = 0.015;
 
   function initialBackendUrl() {
     const forced = new URLSearchParams(window.location.search).get('api');
@@ -403,34 +396,14 @@
   async function fetchBackendJson(pathname, options = {}) {
     let lastError = null;
     for (const baseUrl of backendCandidates()) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), BACKEND_REQUEST_TIMEOUT_MS);
       try {
-        const mergedOptions = {
-          ...options,
-          signal: options?.signal || controller.signal,
-        };
-
-        const res = await fetch(`${baseUrl}${pathname}`, mergedOptions);
-        const text = await res.text();
-        let data = null;
-        try {
-          data = text ? JSON.parse(text) : {};
-        } catch {
-          data = { ok: false, error: text || 'Resposta inválida do servidor.' };
-        }
-
+        const res = await fetch(`${baseUrl}${pathname}`, options);
+        const data = await res.json();
         if (!res.ok || !data.ok) throw new Error(data.error || 'Erro no servidor');
         activeBackendUrl = baseUrl;
         return data;
       } catch (err) {
-        if (err?.name === 'AbortError') {
-          lastError = new Error('Tempo de resposta do backend esgotado. Tente novamente.');
-        } else {
-          lastError = err;
-        }
-      } finally {
-        clearTimeout(timeoutId);
+        lastError = err;
       }
     }
     throw lastError || new Error('Não foi possível conectar ao backend.');
@@ -456,30 +429,6 @@
     });
   }
 
-  async function clearGavetaRequests() {
-    return fetchBackendJson('/api/gaveta/requests', {
-      method: 'DELETE',
-    });
-  }
-
-  async function clearGavetaRequestByTask(task) {
-    const signature = String(task?.signature || taskSignature(task || {})).trim();
-    const params = new URLSearchParams();
-    if (signature) params.set('signature', signature);
-    if (task?.upstreamTaskId) params.set('upstreamTaskId', String(task.upstreamTaskId));
-    if (task?.calendarEventId) params.set('calendarEventId', String(task.calendarEventId));
-    if (task?.type) params.set('type', String(task.type));
-    if (task?.artistName) params.set('artistName', String(task.artistName));
-    if (task?.itemTitle) params.set('itemTitle', String(task.itemTitle));
-    if (task?.sourceUrl) params.set('sourceUrl', String(task.sourceUrl));
-    if (Number(task?.milestone || 0) > 0) params.set('milestone', String(Number(task.milestone || 0)));
-    if (!params.toString()) throw new Error('Dados da solicitacao ausentes para reset.');
-
-    return fetchBackendJson(`/api/gaveta/requests?${params.toString()}`, {
-      method: 'DELETE',
-    });
-  }
-
   function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -487,21 +436,6 @@
       reader.onerror = () => reject(new Error(`Falha ao ler ${file.name || 'arquivo'}.`));
       reader.readAsDataURL(file);
     });
-  }
-
-  function extFromFileName(name) {
-    const safe = String(name || '').trim();
-    const dot = safe.lastIndexOf('.');
-    if (dot < 0) return 'png';
-    const ext = safe.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, '');
-    return ext || 'png';
-  }
-
-  function normalizeSlotFileName(task, file, slot) {
-    const artist = String(task.artistName || 'artista').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'artista';
-    const item = String(task.itemTitle || 'arte').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'arte';
-    const ext = extFromFileName(file?.name);
-    return `${artist}-${item}-${slot}.${ext}`;
   }
 
   function postGavetaUpload(payload, onProgress) {
@@ -618,18 +552,15 @@
   const menuDrawer = qs('menuDrawer');
   const menuBackdrop = qs('menuBackdrop');
   const menuRefreshBtn = qs('menuRefreshBtn');
+  const menuArtBtn = qs('menuArtBtn');
   const menuExportBtn = qs('menuExportBtn');
   const menuImportBtn = qs('menuImportBtn');
   const menuManageBtn = qs('menuManageBtn');
   const menuAddBtn = qs('menuAddBtn');
   const menuCloseBtn = qs('menuCloseBtn');
-  const requestDrawer = qs('requestDrawer');
+  const artBtn = qs('artBtn');
   const artDrawer = qs('artDrawer');
-  const trafficDrawer = qs('trafficDrawer');
-  const closeRequestBtn = qs('closeRequest');
   const closeArtBtn = qs('closeArt');
-  const closeTrafficBtn = qs('closeTraffic');
-  const requestTasksList = qs('requestTasksList');
   const artPendingCount = qs('artPendingCount');
   const artForecastList = qs('artForecastList');
   const artTasksList = qs('artTasksList');
@@ -641,348 +572,69 @@
   const artTabReady = qs('artTabReady');
   const artTabDone = qs('artTabDone');
   const artAddManualBtn = qs('artAddManualBtn');
-  const resetRequestsBtn = qs('resetRequestsBtn');
-  const trafficBudgetInput = qs('trafficBudgetInput');
-  const trafficViewsInput = qs('trafficViewsInput');
-  const trafficSendBtn = qs('trafficSendBtn');
-  const trafficCancelBtn = qs('trafficCancelBtn');
-  const trafficSummary = qs('trafficSummary');
-  const trafficEstimateHint = qs('trafficEstimateHint');
   const formError = qs('formError');
   const refreshBtn = qs('refreshBtn');
-  const toastWrap = qs('toastWrap');
   let artistsCloudSyncQueue = Promise.resolve();
   let artTasks = [];
   const uploadStates = new Map();
-  const quickRequestSubmitting = new Set();
   let remoteRequests = [];
-  const trafficSubmittingBySource = new Set();
   let artActiveTab = 'pending';
   let artArtistFilter = '';
-  let artTaskFocusId = '';
-  let trafficDraft = null;
-  let trafficEditTargetTask = null;
-  let trafficInputLock = false;
 
-  function showToast(message, type = 'info') {
-    if (!toastWrap || !message) return;
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.textContent = String(message);
-    toastWrap.appendChild(el);
-    setTimeout(() => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(6px)';
-      setTimeout(() => el.remove(), 180);
-    }, 2800);
+  function getLastFullRefresh() {
+    return Number(localStorage.getItem(LAST_FULL_REFRESH_KEY) || 0);
   }
 
-  function showErrorToast(error, fallbackMessage) {
-    const raw = String(error?.message || '').trim();
-    const message = raw || String(fallbackMessage || 'Erro inesperado. Tente novamente.');
-    showToast(message, 'error');
+  function setLastFullRefresh(ts) {
+    localStorage.setItem(LAST_FULL_REFRESH_KEY, String(ts));
   }
 
-  function taskSignatureFromParts(type, artistName, itemTitle, milestone) {
-    return [type || '', artistName || '', itemTitle || '', Number(milestone || 0)].join('|').toLowerCase();
+  function getFullRefreshRemainingMs() {
+    const elapsed = Date.now() - getLastFullRefresh();
+    return Math.max(0, FULL_REFRESH_INTERVAL_MS - elapsed);
   }
 
-  function quickRequestKey(type, artistName, itemTitle, milestone) {
-    return taskSignatureFromParts(type, artistName, itemTitle, milestone);
+  function formatMmSs(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const ss = String(totalSec % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
   }
 
-  function normalizeSigText(value) {
-    return String(value || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim()
-      .replace(/\s+/g, ' ');
-  }
-
-  function taskLooseSignatureFromParts(type, artistName, itemTitle) {
-    return [normalizeSigText(type), normalizeSigText(artistName), normalizeSigText(itemTitle)].join('|');
-  }
-
-  function normalizeSourceUrl(url) {
-    const raw = String(url || '').trim();
-    if (!raw) return '';
-    try {
-      const u = new URL(raw);
-      const host = String(u.hostname || '').replace(/^www\./i, '').toLowerCase();
-      const pathname = String(u.pathname || '').replace(/\/+$/, '');
-
-      if (host === 'youtu.be') {
-        const videoId = pathname.replace(/^\/+/, '');
-        return videoId ? `youtube.com/watch?v=${videoId}` : 'youtube.com/watch';
-      }
-
-      if (host.includes('youtube.com') && pathname === '/watch') {
-        const videoId = String(u.searchParams.get('v') || '').trim();
-        return videoId ? `youtube.com/watch?v=${videoId}` : 'youtube.com/watch';
-      }
-
-      return `${host}${pathname.toLowerCase()}`;
-    } catch {
-      return raw.toLowerCase();
-    }
-  }
-
-  function parseBrCurrencyInput(text) {
-    const raw = String(text || '').trim();
-    if (!raw) return 0;
-    const normalized = raw.replace(/\./g, '').replace(',', '.').replace(/[^0-9.]/g, '');
-    const n = Number(normalized);
-    return Number.isFinite(n) ? Math.max(0, n) : 0;
-  }
-
-  function parseCurrencyToCents(text) {
-    const digits = String(text || '').replace(/\D/g, '');
-    if (!digits) return 0;
-    return Math.max(0, Number(digits));
-  }
-
-  function formatCurrencyFromCents(cents) {
-    const n = Math.max(0, Number(cents || 0));
-    return (n / 100).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
-
-  function parseViewsInput(text) {
-    const raw = String(text || '').trim().replace(/[^0-9]/g, '');
-    const n = Number(raw || 0);
-    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
-  }
-
-  function formatBrCurrency(value) {
-    const n = Number(value || 0);
-    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function formatViews(value) {
-    const n = Number(value || 0);
-    return n.toLocaleString('pt-BR');
-  }
-
-  function updateTrafficEstimateHint(budget, views) {
-    if (!trafficEstimateHint) return;
-    if (!budget && !views) {
-      trafficEstimateHint.textContent = 'Digite a meta de visualizações para calcular o valor estimado.';
-      return;
-    }
-    trafficEstimateHint.textContent = `Estimativa: ${formatBrCurrency(budget)} para aproximadamente ${formatViews(views)} visualizações.`;
-  }
-
-  function fillTrafficByBudget(budget) {
-    const b = Math.max(0, Number(budget || 0));
-    const views = Math.max(0, Math.round(b / TRAFFIC_COST_PER_VIEW));
-    if (trafficBudgetInput) {
-      const cents = Math.round(b * 100);
-      trafficBudgetInput.value = cents > 0 ? formatCurrencyFromCents(cents) : '';
-    }
-    if (trafficViewsInput) trafficViewsInput.value = views ? formatViews(views) : '';
-    updateTrafficEstimateHint(b, views);
-  }
-
-  function fillTrafficByViews(views) {
-    const v = Math.max(0, Number(views || 0));
-    const budget = v * TRAFFIC_COST_PER_VIEW;
-    if (trafficViewsInput) trafficViewsInput.value = v ? formatViews(v) : '';
-    if (trafficBudgetInput) {
-      const cents = Math.round(budget * 100);
-      trafficBudgetInput.value = cents > 0 ? formatCurrencyFromCents(cents) : '';
-    }
-    updateTrafficEstimateHint(budget, v);
-  }
-
-  function budgetFromTrafficTask(task) {
-    const direct = Number(task?.trafficBudget || 0);
-    if (direct > 0) return direct;
-    const note = String(task?.note || '');
-    const match = note.match(/R\$\s*([\d\.]+,\d{2})/i);
-    if (!match) return 0;
-    return parseBrCurrencyInput(match[1]);
-  }
-
-  function findRequestedTrafficTask(artistName, itemTitle, sourceUrl) {
-    const loose = taskLooseSignatureFromParts('traffic', artistName, itemTitle);
-    const source = normalizeSourceUrl(sourceUrl);
-    return artTasks.find(task => {
-      if (String(task.type || '').toLowerCase() !== 'traffic') return false;
-      if (!isTaskRequested(task)) return false;
-      const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
-      const sourceTask = source && normalizeSourceUrl(task.sourceUrl) === source;
-      return looseTask || sourceTask;
-    }) || null;
-  }
-
-  function setTrafficDrawerMode(mode) {
-    const editing = mode === 'edit';
-    if (trafficSendBtn) {
-      trafficSendBtn.textContent = editing ? 'Salvar correção de tráfego' : 'Enviar solicitação de tráfego';
-    }
-  }
-
-  function setTrafficSubmitting(sourceUrl, on) {
-    const key = normalizeSourceUrl(sourceUrl);
-    if (!key) return;
-    if (on) trafficSubmittingBySource.add(key);
-    else trafficSubmittingBySource.delete(key);
-    refreshQuickRequestButtonsInGrid();
-  }
-
-  function hasRequestedSignature(type, artistName, itemTitle, milestone, sourceUrl) {
-    const signature = taskSignatureFromParts(type, artistName, itemTitle, milestone);
-    const loose = taskLooseSignatureFromParts(type, artistName, itemTitle);
-    const source = normalizeSourceUrl(sourceUrl);
-
-    if (String(type || '').toLowerCase() === 'traffic') {
-      const localTraffic = artTasks.some(task => {
-        if (String(task.type || '').toLowerCase() !== 'traffic') return false;
-        if (!isTaskRequested(task)) return false;
-        const sameSignature = String(task.signature || '') === signature;
-        const sameSource = source && normalizeSourceUrl(task.sourceUrl) === source;
-        const sameLooseWithoutSource = !source && taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
-        return sameSignature || sameSource || sameLooseWithoutSource;
-      });
-
-      const remoteTraffic = remoteRequests.some(req => {
-        if (String(req.type || '').toLowerCase() !== 'traffic') return false;
-        const sameSignature = String(req.signature || '') === signature;
-        const sameSource = source && normalizeSourceUrl(req.sourceUrl) === source;
-        const sameLooseWithoutSource = !source && taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle) === loose;
-        return sameSignature || sameSource || sameLooseWithoutSource;
-      });
-
-      return localTraffic || remoteTraffic;
-    }
-
-    const local = artTasks.some(task => {
-      const exact = String(task.signature || '') === signature;
-      const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
-      const sourceTask = source && normalizeSourceUrl(task.sourceUrl) === source;
-      return (exact || looseTask || sourceTask) && isTaskRequested(task);
-    });
-
-    const remote = remoteRequests.some(req => {
-      const exact = String(req.signature || '') === signature;
-      const looseReq = taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle) === loose;
-      const sourceReq = source && normalizeSourceUrl(req.sourceUrl) === source;
-      return exact || looseReq || sourceReq;
-    });
-
-    return local || remote;
-  }
-
-  function refreshQuickRequestButtonsInGrid() {
-    const grid = qs('artistGrid');
-    if (!grid) return;
-    grid.querySelectorAll('[data-quick-request]').forEach(btn => {
-      const type = btn.getAttribute('data-type') || 'manual';
-      const artist = btn.getAttribute('data-artist') || '';
-      const title = btn.getAttribute('data-title') || '';
-      const milestone = Number(btn.getAttribute('data-milestone') || 0);
-      const source = btn.getAttribute('data-source') || '';
-      const requested = hasRequestedSignature(type, artist, title, milestone, source);
-      btn.disabled = requested;
-      btn.textContent = requested ? 'Pedido enviado' : 'Pedir arte';
-      btn.classList.toggle('requested', requested);
-      btn.classList.toggle('dark', !requested);
-    });
-
-    grid.querySelectorAll('[data-quick-traffic]').forEach(btn => {
-      const artist = btn.getAttribute('data-artist') || '';
-      const title = btn.getAttribute('data-title') || '';
-      const currentViews = Number(btn.getAttribute('data-current') || 0);
-      const source = btn.getAttribute('data-source') || '';
-      const requested = hasRequestedSignature('traffic', artist, title, currentViews, source);
-      const submitting = Boolean(source && trafficSubmittingBySource.has(normalizeSourceUrl(source)));
-      btn.disabled = submitting;
-      btn.textContent = requested ? 'Tráfego solicitado' : (submitting ? 'Enviando...' : 'Rodar tráfego');
-      btn.classList.toggle('requested', requested);
-      btn.classList.toggle('orange', !requested);
-    });
-  }
-
-  function clearRemoteMatchesByTask(task) {
-    const selectedSig = String(task.signature || taskSignature(task));
-    const selectedLoose = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle);
-    const selectedSource = normalizeSourceUrl(task.sourceUrl);
-    const isTraffic = String(task.type || '').toLowerCase() === 'traffic';
-    remoteRequests = remoteRequests.filter(req => {
-      const reqSig = String(req.signature || '');
-      const reqLoose = taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle);
-      const reqSource = normalizeSourceUrl(req.sourceUrl);
-      if (reqSig && reqSig === selectedSig) return false;
-      if (isTraffic) {
-        if (selectedSource && reqSource && reqSource === selectedSource) return false;
-        return true;
-      }
-      if (selectedLoose && reqLoose === selectedLoose) return false;
-      if (selectedSource && reqSource && reqSource === selectedSource) return false;
-      return true;
-    });
-  }
-
-  function findMatchingTasksForReset({ type, artistName, itemTitle, milestone, sourceUrl }) {
-    const normalizedType = String(type || '').toLowerCase();
-    const signature = taskSignatureFromParts(type, artistName, itemTitle, milestone);
-    const loose = taskLooseSignatureFromParts(type, artistName, itemTitle);
-    const source = normalizeSourceUrl(sourceUrl);
-    return artTasks.filter(task => {
-      const exact = String(task.signature || '') === signature;
-      if (normalizedType === 'traffic') {
-        const sameType = String(task.type || '').toLowerCase() === 'traffic';
-        if (!sameType) return false;
-        const sameSource = source && normalizeSourceUrl(task.sourceUrl) === source;
-        const looseWithoutSource = !source && taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
-        return exact || sameSource || looseWithoutSource;
-      }
-      const looseTask = taskLooseSignatureFromParts(task.type, task.artistName, task.itemTitle) === loose;
-      const sourceTask = source && normalizeSourceUrl(task.sourceUrl) === source;
-      return exact || looseTask || sourceTask;
-    });
-  }
-
-  async function resetMediaRequestByParams(params, successLabel) {
-    const matches = findMatchingTasksForReset(params);
-    const requestedMatches = matches.filter(task => isTaskRequested(task));
-    if (!requestedMatches.length) {
-      showToast('Nenhuma solicitação ativa para zerar neste item.', 'warn');
-      return;
-    }
-
-    for (const task of requestedMatches) {
-      const resetResult = await clearGavetaRequestByTask(task);
-      clearRemoteMatchesByTask(task);
-      task.requested = false;
-      task.calendarEventId = '';
-      task.upstreamTaskId = '';
-      if (task.status !== 'done') task.status = 'pending';
-
-      const warnings = Array.isArray(resetResult?.cancellationSyncWarnings) ? resetResult.cancellationSyncWarnings : [];
-      if (warnings.length) {
-        showToast('Pedido foi zerado no painel, mas agenda não confirmou remoção automática.', 'warn');
-      }
-    }
-
-    saveArtTasks();
-    showToast(successLabel, 'success');
-    await refreshRemoteRequests();
-    await loadDashboard();
+  function formatRemainingLong(ms) {
+    const totalMinutes = Math.ceil(ms / 60000);
+    const days = Math.floor(totalMinutes / (24 * 60));
+    const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+    const mins = totalMinutes % 60;
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${formatMmSs(ms)}`;
   }
 
   function updateRefreshButtonState() {
-    if (!refreshBtn) return;
-    refreshBtn.disabled = false;
-    refreshBtn.textContent = 'Atualizar agora';
+    const remaining = getFullRefreshRemainingMs();
+    if (remaining > 0) {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = `Geral em ${formatRemainingLong(remaining)}`;
+    } else {
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = 'Atualizar geral (semanal)';
+    }
   }
 
   function confirmFullRefresh() {
-    return true;
+    const remaining = getFullRefreshRemainingMs();
+    if (remaining > 0) {
+      const nextDate = new Date(getLastFullRefresh() + FULL_REFRESH_INTERVAL_MS).toLocaleString('pt-BR');
+      alert(`Atualização geral bloqueada até ${nextDate}.`);
+      return false;
+    }
+
+    const confirmed = window.confirm('Atualização geral vai consumir créditos da API para TODOS os artistas. Deseja continuar?');
+    if (!confirmed) return false;
+
+    const typed = window.prompt('Digite ATUALIZAR GERAL para confirmar.');
+    return typed === 'ATUALIZAR GERAL';
   }
 
   function extractSpotifyId(v = '') {
@@ -1191,19 +843,15 @@
     }
 
     const bySpotifyId = new Map();
-    const byArtistName = new Map();
     cachedPayload.artists.forEach(item => {
       const id = String(item?.spotifyArtistId || '').trim();
       if (id) bySpotifyId.set(id, item);
-      const nameKey = normalizeSigText(item?.artistName || '');
-      if (nameKey) byArtistName.set(nameKey, item);
     });
 
     const artists = livePayload.artists.map(item => {
       if (!item?.error) return item;
       const id = String(item?.spotifyArtistId || '').trim();
-      const nameKey = normalizeSigText(item?.artistName || '');
-      const cachedItem = bySpotifyId.get(id) || byArtistName.get(nameKey);
+      const cachedItem = bySpotifyId.get(id);
       return cachedItem || item;
     });
 
@@ -1215,7 +863,6 @@
 
   function renderDashboardPayload(data) {
     qs('artistGrid').innerHTML = (data.artists || []).map(artistCard).join('');
-    refreshQuickRequestButtonsInGrid();
     renderArtForecast();
     renderTrafficAlerts(data.trafficAlerts || []);
     updateArtTasksFromArtists(data.artists || []);
@@ -1364,16 +1011,6 @@
     try {
       const data = await fetchGavetaRequests();
       remoteRequests = Array.isArray(data.requests) ? data.requests : [];
-      const remoteSignatures = new Set(remoteRequests.map(req => String(req.signature || '').trim()).filter(Boolean));
-
-      artTasks.forEach(task => {
-        const sig = String(task.signature || taskSignature(task));
-        const existsRemote = remoteSignatures.has(sig);
-        if (!existsRemote && task.status !== 'done') {
-          task.requested = false;
-          if (task.status === 'progress') task.status = 'pending';
-        }
-      });
 
       remoteRequests.forEach(req => {
         const signature = String(req.signature || '').trim();
@@ -1409,77 +1046,21 @@
     const payload = {
       ...task,
       requested: true,
-      requestDetails: {
-        type: task.type || 'manual',
-        artistName: task.artistName || '',
-        itemTitle: task.itemTitle || '',
-        metricLabel: task.metricLabel || '',
-        currentValue: Number(task.currentValue || 0),
-        milestone: Number(task.milestone || 0),
-        sourceUrl: task.sourceUrl || '',
-        coverUrl: task.coverUrl || '',
-        note: task.note || '',
-      },
-      dueDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       calendarId: GAVETA_CALENDAR_ID,
     };
 
     const data = await createGavetaRequest(payload);
-    if (!data?.request?.calendarEventId) {
-      throw new Error('Agenda nao confirmou o evento. Tente novamente.');
-    }
     task.requested = true;
     if (task.status === 'pending') task.status = 'progress';
     if (data?.request?.calendarEventId) task.calendarEventId = data.request.calendarEventId;
     return data;
   }
 
-  async function requestTrafficFromDraft(draft) {
-    if (!draft) throw new Error('Video não selecionado para tráfego.');
-    const budget = Number(draft.budget || 0);
-    const viewsTarget = Number(draft.viewsTarget || 0);
-    if (!budget || !viewsTarget) {
-      throw new Error('Preencha investimento e meta de visualizações.');
-    }
-
-    const taskPayload = {
-      id: `traffic-${Date.now()}`,
-      type: 'traffic',
-      artistName: draft.artistName || 'Artista',
-      itemTitle: draft.videoTitle || 'Video',
-      metricLabel: 'Visualizações de tráfego',
-      currentValue: Number(draft.currentViews || 0),
-      milestone: viewsTarget,
-      sourceUrl: draft.sourceUrl || '',
-      coverUrl: draft.coverUrl || '',
-      demandStatus: 'do',
-      trafficBudget: budget,
-      trafficViewsTarget: viewsTarget,
-      note: `Valor para boleto: ${formatBrCurrency(budget)} | Meta de visualizações: ${formatViews(viewsTarget)}`,
-    };
-
-    ensureAutoTask(taskPayload);
-    const task = artTasks.find(t => String(t.signature || '') === taskSignature(taskPayload)) || taskPayload;
-    const data = await createGavetaRequest(task);
-    if (!data?.request?.calendarEventId) {
-      throw new Error('Agenda nao confirmou o evento de tráfego.');
-    }
-
-    if (task && task !== taskPayload) {
-      task.requested = true;
-      if (task.status === 'pending') task.status = 'progress';
-      task.calendarEventId = data.request.calendarEventId;
-    }
-
-    return data;
-  }
-
   function saveArtTasks() {
     localStorage.setItem(ART_TASKS_KEY, JSON.stringify(artTasks));
     renderArtIndicators();
-    refreshQuickRequestButtonsInGrid();
     renderArtForecast();
-    renderRequestTasks();
     renderArtTasks();
     renderGavetaRequests();
     renderUploadReport();
@@ -1596,7 +1177,7 @@
     if (status === 'pending') return 'Pendente';
     if (status === 'progress') return 'Em andamento';
     if (status === 'ready') return 'Pronta';
-    return 'Arte disponivel';
+    return 'Entregue';
   }
 
   function nextStatus(status) {
@@ -1607,7 +1188,6 @@
   }
 
   function renderArtIndicators() {
-    if (!artPendingCount) return;
     const pending = artTasks.filter(t => t.status === 'pending' || t.status === 'progress').length;
     artPendingCount.textContent = String(pending);
   }
@@ -1775,127 +1355,25 @@
       btn.addEventListener('click', () => {
         artArtistFilter = '';
         artActiveTab = 'pending';
-        artTaskFocusId = btn.getAttribute('data-open-art') || '';
-        openDrawer(requestDrawer);
-        renderRequestTasks();
+        openDrawer(artDrawer);
+        renderArtTasks();
           renderGavetaRequests();
       });
     });
   }
 
-  function renderRequestTasks() {
-    if (!requestTasksList) return;
-
-    if (!artTaskFocusId) {
-      requestTasksList.innerHTML = '<div class="empty">Clique em Pedir arte no single ou vídeo para abrir a solicitação deste item.</div>';
-      return;
-    }
-
-    const task = artTasks.find(t => t.id === artTaskFocusId);
-    if (!task) {
-      requestTasksList.innerHTML = '<div class="empty">Item selecionado não encontrado.</div>';
-      return;
-    }
-
-    const requested = isTaskRequested(task);
-    requestTasksList.innerHTML = `
-      <section class="task-group">
-        <div class="task-group-title requested">Solicitação selecionada</div>
-        <div class="art-task">
-          <div class="art-task-head">
-            <div class="art-task-main">
-              <img class="task-cover" src="${esc(task.coverUrl || '')}" alt="${esc(task.itemTitle || 'Capa')}" loading="lazy">
-              <div>
-                <div class="art-task-title">${esc(task.artistName)} · ${esc(task.itemTitle)}</div>
-                <div class="art-task-meta">${esc(task.metricLabel)} · meta ${compact(task.milestone)} · atual ${compact(task.currentValue)}</div>
-                ${task.sourceUrl ? `<div class="art-task-meta"><a href="${esc(task.sourceUrl)}" target="_blank" rel="noopener">Abrir origem</a></div>` : ''}
-              </div>
-            </div>
-            <span class="status-pill status-${esc(task.status)}">${statusLabel(task.status)}</span>
-          </div>
-          <div class="art-row">
-            <button class="btn sm ${requested ? 'requested' : 'dark'}" data-send-request="${esc(task.id)}" ${(requested ? 'disabled' : '')}>${requested ? 'Pedido enviado' : 'Solicitar arte'}</button>
-            ${requested ? `<button class="btn sm reset-shortcut" data-cancel-request="${esc(task.id)}">Cancelar entrega</button>` : ''}
-          </div>
-          <div class="art-task-meta">${requested ? 'Solicitação confirmada na agenda.' : 'Clique para enviar a solicitação para agenda.'}</div>
-          <div class="art-task-meta">Cancelamento disponível: cliente ou equipe podem cancelar esta entrega.</div>
-        </div>
-      </section>
-    `;
-
-    requestTasksList.querySelectorAll('[data-send-request]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-send-request');
-        const selectedTask = artTasks.find(t => t.id === id);
-        if (!selectedTask || isTaskRequested(selectedTask)) return;
-
-        try {
-          btn.disabled = true;
-          btn.textContent = 'Enviando...';
-          await requestTaskFromTask(selectedTask);
-          saveArtTasks();
-          showToast('Pedido enviado e confirmado na agenda.', 'success');
-          renderRequestTasks();
-        } catch (err) {
-          btn.disabled = false;
-          btn.textContent = 'Solicitar arte';
-          showErrorToast(err, 'Falha ao enviar solicitação para agenda.');
-        }
-      });
-    });
-
-    requestTasksList.querySelectorAll('[data-cancel-request]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-cancel-request');
-        const selectedTask = artTasks.find(t => t.id === id);
-        if (!selectedTask || !isTaskRequested(selectedTask)) return;
-
-        const confirmed = window.confirm(`Cancelar entrega de ${selectedTask.artistName || 'Artista'} - ${selectedTask.itemTitle || 'Item'}?`);
-        if (!confirmed) return;
-
-        try {
-          btn.disabled = true;
-          btn.textContent = 'Cancelando...';
-          const result = await clearGavetaRequestByTask(selectedTask);
-          if (Array.isArray(result?.requests)) {
-            remoteRequests = result.requests;
-          }
-          selectedTask.requested = false;
-          selectedTask.calendarEventId = '';
-          selectedTask.upstreamTaskId = '';
-          if (selectedTask.status !== 'done') selectedTask.status = 'pending';
-          saveArtTasks();
-
-          const warnings = Array.isArray(result?.cancellationSyncWarnings) ? result.cancellationSyncWarnings : [];
-          if (warnings.length) {
-            showToast('Entrega cancelada no painel, mas agenda não confirmou remoção automática.', 'warn');
-          } else {
-            showToast('Entrega cancelada com sucesso.', 'success');
-          }
-          renderRequestTasks();
-        } catch (err) {
-          btn.disabled = false;
-          btn.textContent = 'Cancelar entrega';
-          showErrorToast(err, 'Não foi possível cancelar esta entrega.');
-        }
-      });
-    });
-  }
-
   function renderArtTasks() {
-    if (!artTaskFocusId) {
-      artTasksList.innerHTML = '<div class="empty">Clique em Subir artes para abrir a entrega deste item.</div>';
-      return;
-    }
-
-    const filtered = artTasks.filter(t => t.id === artTaskFocusId);
+    const filtered = artTasks.filter(t => {
+      if (t.status !== artActiveTab) return false;
+      if (!artArtistFilter) return true;
+      return String(t.artistName || '').trim() === artArtistFilter;
+    });
     if (!filtered.length) {
-      artTasksList.innerHTML = '<div class="empty">Item selecionado nao encontrado.</div>';
+      artTasksList.innerHTML = `<div class="empty">${artArtistFilter ? `Nenhuma arte nesta coluna para ${esc(artArtistFilter)}.` : 'Nenhuma arte nesta coluna.'}</div>`;
       return;
     }
 
     function renderTaskCard(task) {
-      const requested = isTaskRequested(task);
       return `
       <div class="art-task">
         <div class="art-task-head">
@@ -1907,21 +1385,18 @@
               ${task.sourceUrl ? `<div class="art-task-meta"><a href="${esc(task.sourceUrl)}" target="_blank" rel="noopener">Abrir origem</a></div>` : ''}
             </div>
           </div>
-          <span class="status-pill status-${esc(task.status)}">${statusLabel(task.status)}</span>
+          <button class="status-pill status-${esc(task.status)}" data-status="${esc(task.id)}">${statusLabel(task.status)}</button>
         </div>
         <div class="art-row">
-          <label class="btn dark sm" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
-            Selecionar artes
-            <input type="file" accept="image/*,video/*" data-upload-delivery="${esc(task.id)}" multiple style="display:none">
-          </label>
-          <button class="btn dark sm" data-send-delivery="${esc(task.id)}">Subir artes no Drive</button>
-          ${requested ? `<button class="btn sm reset-shortcut" data-cancel-delivery="${esc(task.id)}">Cancelar entrega</button>` : ''}
+          <button class="btn dark sm" data-request="${esc(task.id)}">${isTaskRequested(task) ? 'Solicitada' : 'Solicitar arte'}</button>
+          <input type="file" accept="image/*,video/mp4,video/quicktime" multiple data-upload="${esc(task.id)}">
           ${(task.assets || []).map((asset, i) => {
             const href = asset.dataUrl || asset.downloadUrl || asset.webViewLink || asset.driveUrl || '';
             if (!href) return '';
             const label = asset.driveUrl || asset.webViewLink ? `Drive ${i + 1}` : `Baixar ${i + 1}`;
             return `<a class="btn dark sm" href="${esc(href)}" target="_blank" rel="noopener" download="${esc(asset.name || `arte-${i + 1}`)}">${label}</a>`;
           }).join('')}
+          <button class="btn dark sm" data-delete="${esc(task.id)}">Excluir</button>
         </div>
         <div class="upload-status hidden" id="upload-state-${esc(task.id)}">
           <div class="upload-status-head">
@@ -1930,119 +1405,123 @@
           </div>
           <div class="upload-progress"><div class="upload-progress-fill" data-upload-fill style="width:0%"></div></div>
         </div>
-        <div class="art-task-meta">Entrega: envie arte de Feed e/ou Reels para disponibilizar ao cliente.</div>
-        <div class="art-task-meta">${requested ? 'Pedido já existe na agenda.' : 'Entrega independente da solicitação.'}</div>
-        ${task.driveUrl ? `<div class="art-row"><a class="btn requested sm" href="${esc(task.driveUrl)}" target="_blank" rel="noopener">Arte disponível para ele visualizar</a><button class="btn dark sm" data-copy-drive="${esc(task.id)}">Copiar link</button></div>` : ''}
+        <div class="art-row">
+          <input class="input" placeholder="Link da pasta/arquivo no Google Drive" value="${esc(task.driveUrl || '')}" data-drive="${esc(task.id)}">
+          ${task.driveUrl ? `<a class="btn dark sm" href="${esc(task.driveUrl)}" target="_blank" rel="noopener">Abrir Drive</a>` : ''}
+        </div>
+        <textarea class="input" rows="2" data-note="${esc(task.id)}" placeholder="Observacoes">${esc(task.note || '')}</textarea>
       </div>
     `;
     }
 
-    artTasksList.innerHTML = `<section class="task-group"><div class="task-group-title requested">Entrega selecionada</div>${filtered.map(renderTaskCard).join('')}</section>`;
+    const requestedTasks = filtered.filter(task => isTaskRequested(task));
+    const pendingTasks = filtered.filter(task => !isTaskRequested(task));
 
-    artTasksList.querySelectorAll('[data-send-delivery]').forEach(btn => {
+    var sections = '';
+    if (pendingTasks.length) {
+      sections += `<section class="task-group"><div class="task-group-title pending">Nao solicitadas (${pendingTasks.length})</div>${pendingTasks.map(renderTaskCard).join('')}</section>`;
+    }
+    if (requestedTasks.length) {
+      sections += `<section class="task-group"><div class="task-group-title requested">Solicitadas (${requestedTasks.length})</div>${requestedTasks.map(renderTaskCard).join('')}</section>`;
+    }
+
+    artTasksList.innerHTML = sections;
+
+    artTasksList.querySelectorAll('[data-request]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-send-delivery');
+        const id = btn.getAttribute('data-request');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        try {
+          await requestTaskFromTask(task);
+        } catch (err) {
+          alert(err.message || 'Não foi possível enviar solicitação para agenda.');
+          return;
+        }
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-status');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        task.status = nextStatus(task.status);
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete');
+        artTasks = artTasks.filter(t => t.id !== id);
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-note]').forEach(field => {
+      field.addEventListener('change', () => {
+        const id = field.getAttribute('data-note');
+        const task = artTasks.find(t => t.id === id);
+        if (!task) return;
+        task.note = field.value;
+        saveArtTasks();
+      });
+    });
+
+    artTasksList.querySelectorAll('[data-upload]').forEach(input => {
+      input.addEventListener('change', async () => {
+        const files = Array.from(input.files || []);
+        if (!files.length) return;
+        const id = input.getAttribute('data-upload');
         const task = artTasks.find(t => t.id === id);
         if (!task) return;
 
-        const deliveryInput = artTasksList.querySelector(`[data-upload-delivery="${id}"]`);
-        const selectedFiles = Array.from(deliveryInput?.files || []);
-
-        const filesToUpload = [];
-        selectedFiles.slice(0, 6).forEach((pickedFile, idx) => {
-          const slot = idx === 0 ? 'feed' : (idx === 1 ? 'reels' : `arte-${idx + 1}`);
-          filesToUpload.push(new File([pickedFile], normalizeSlotFileName(task, pickedFile, slot), { type: pickedFile.type || 'application/octet-stream' }));
-        });
-
-        if (!filesToUpload.length) {
-          alert('Selecione ao menos uma arte antes de enviar.');
-          return;
-        }
-
         try {
+          if (!isTaskRequested(task)) {
+            await requestTaskFromTask(task);
+          }
+
           setUploadState(task.id, {
             phase: 'preparing',
             progress: 0,
-            message: 'Preparando artes para envio...',
+            message: `Preparando ${files.length} arquivo(s)...`,
           });
 
-          const uploaded = await uploadGavetaAssets(task, filesToUpload, state => setUploadState(task.id, state));
+          const uploaded = await uploadGavetaAssets(task, files, state => setUploadState(task.id, state));
           const remoteAssets = Array.isArray(uploaded.uploaded) ? uploaded.uploaded : [];
           task.assets = [...(Array.isArray(task.assets) ? task.assets : []), ...remoteAssets].slice(0, 12);
           if (!task.driveUrl && remoteAssets[0]?.driveUrl) task.driveUrl = remoteAssets[0].driveUrl;
           task.status = 'done';
           task.requested = true;
           artActiveTab = 'done';
-          artArtistFilter = '';
+          artArtistFilter = task.artistName || '';
           saveArtTasks();
           setUploadState(task.id, {
             phase: 'done',
             progress: 100,
-            message: 'Entrega enviada com sucesso.',
+            message: `Concluído. ${remoteAssets.length} arquivo(s) no Drive.`,
           });
-          showToast('Artes enviadas para o Drive. Arte disponível para ele visualizar.', 'success');
           setTimeout(() => clearUploadState(task.id), 5000);
-          if (deliveryInput) deliveryInput.value = '';
         } catch (err) {
           setUploadState(task.id, {
             phase: 'error',
             progress: 0,
-            message: err.message || 'Nao foi possivel enviar as artes.',
+            message: err.message || 'Falha no upload para o Drive.',
           });
-          alert((err.message || 'Nao foi possivel enviar as artes.') + ' Configure GAVETA_APPS_SCRIPT_URL no backend e tente novamente.');
+          alert((err.message || 'Falha no upload para o Drive.') + ' Configure GAVETA_APPS_SCRIPT_URL no backend e tente novamente.');
         }
       });
     });
 
-    artTasksList.querySelectorAll('[data-cancel-delivery]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-cancel-delivery');
-        const selectedTask = artTasks.find(t => t.id === id);
-        if (!selectedTask || !isTaskRequested(selectedTask)) return;
-
-        const confirmed = window.confirm(`Cancelar entrega de ${selectedTask.artistName || 'Artista'} - ${selectedTask.itemTitle || 'Item'}?`);
-        if (!confirmed) return;
-
-        try {
-          btn.disabled = true;
-          btn.textContent = 'Cancelando...';
-          const result = await clearGavetaRequestByTask(selectedTask);
-          if (Array.isArray(result?.requests)) {
-            remoteRequests = result.requests;
-          }
-          selectedTask.requested = false;
-          selectedTask.calendarEventId = '';
-          selectedTask.upstreamTaskId = '';
-          if (selectedTask.status !== 'done') selectedTask.status = 'pending';
-          saveArtTasks();
-
-          const warnings = Array.isArray(result?.cancellationSyncWarnings) ? result.cancellationSyncWarnings : [];
-          if (warnings.length) {
-            showToast('Entrega cancelada no painel, mas agenda não confirmou remoção automática.', 'warn');
-          } else {
-            showToast('Entrega cancelada com sucesso.', 'success');
-          }
-          renderArtTasks();
-        } catch (err) {
-          btn.disabled = false;
-          btn.textContent = 'Cancelar entrega';
-          showErrorToast(err, 'Não foi possível cancelar esta entrega.');
-        }
-      });
-    });
-
-    artTasksList.querySelectorAll('[data-copy-drive]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-copy-drive');
+    artTasksList.querySelectorAll('[data-drive]').forEach(field => {
+      field.addEventListener('change', () => {
+        const id = field.getAttribute('data-drive');
         const task = artTasks.find(t => t.id === id);
-        const link = String(task?.driveUrl || '').trim();
-        if (!link) return;
-        try {
-          await navigator.clipboard.writeText(link);
-          showToast('Link do Drive copiado.', 'info');
-        } catch {
-          showToast('Nao foi possivel copiar automaticamente.', 'error');
-        }
+        if (!task) return;
+        task.driveUrl = field.value.trim();
+        saveArtTasks();
       });
     });
   }
@@ -2051,9 +1530,7 @@
     backdrop.classList.remove('hidden');
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
-    requestDrawer.classList.add('hidden');
     artDrawer.classList.add('hidden');
-    trafficDrawer.classList.add('hidden');
     w.classList.remove('hidden');
   }
 
@@ -2061,9 +1538,7 @@
     backdrop.classList.add('hidden');
     addDrawer.classList.add('hidden');
     manageDrawer.classList.add('hidden');
-    requestDrawer.classList.add('hidden');
     artDrawer.classList.add('hidden');
-    trafficDrawer.classList.add('hidden');
     formError.classList.add('hidden');
     formError.textContent = '';
   }
@@ -2100,8 +1575,6 @@
     const list = qs('trafficList');
     const badge = qs('trafficCount');
 
-    if (!section || !list || !badge) return;
-
     if (!alerts || !alerts.length) {
       section.classList.add('hidden');
       return;
@@ -2128,13 +1601,14 @@
   function singleRow(s) {
     const hasPlays = s.plays !== null && s.plays !== undefined;
     const demand = computeDemandStatus(Number(s.plays || 0), 50000);
-    const milestone = Number(demand.currentTarget || 0);
-    const submitting = quickRequestSubmitting.has(quickRequestKey('single', s.artistName || '', s.title || 'Single', milestone));
-    const requested = hasRequestedSignature('single', s.artistName || '', s.title || 'Single', milestone, s.spotifyUrl || '');
+    const signature = ['single', s.artistName || '', s.title || 'Single', Number(demand.currentTarget || 0)].join('|').toLowerCase();
+    const requested = artTasks.some(function (t) {
+      return String(t.signature || '') === signature && isTaskRequested(t);
+    });
     return `
-      <div class="media-row single-row">
+      <div class="media-row">
         <a href="${esc(s.spotifyUrl || '#')}" target="_blank" rel="noopener" title="Abrir no Spotify">
-          <img class="media-thumb single-thumb" src="${esc(s.coverUrl || '')}" alt="${esc(s.title || 'Single')}" loading="lazy">
+          <img class="media-thumb" src="${esc(s.coverUrl || '')}" alt="${esc(s.title || 'Single')}" loading="lazy">
         </a>
         <div class="media-info">
           <div class="media-title"><a href="${esc(s.spotifyUrl || '#')}" target="_blank" rel="noopener">${esc(s.title || 'Single')}</a></div>
@@ -2145,11 +1619,7 @@
           ${hasPlays
             ? `<div class="media-num">${compact(s.plays)}</div><div class="media-lbl">streams</div>`
             : '<div class="no-data">--</div>'}
-        </div>
-        <div class="media-actions">
-          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${milestone}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
-          ${requested ? `<button class="btn sm reset-shortcut" data-reset-request="1" data-type="single" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-milestone="${milestone}" data-source="${esc(s.spotifyUrl || '')}">Zerar pedido</button>` : ''}
-          <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${milestone}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}">Subir artes</button>
+          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(s.artistName || '')}" data-title="${esc(s.title || 'Single')}" data-type="single" data-metric="Plays do single" data-current="${Number(s.plays || 0)}" data-milestone="${Number(demand.currentTarget || 0)}" data-cover="${esc(s.coverUrl || '')}" data-source="${esc(s.spotifyUrl || '')}">${requested ? 'Solicitada' : 'Solicitar arte'}</button>
         </div>
       </div>
     `;
@@ -2157,11 +1627,10 @@
 
   function videoRow(v) {
     const demand = computeDemandStatus(Number(v.views || 0), 50000);
-    const milestone = Number(demand.currentTarget || 0);
-    const submitting = quickRequestSubmitting.has(quickRequestKey('youtube', v.artistName || '', v.title || 'Video', milestone));
-    const requested = hasRequestedSignature('youtube', v.artistName || '', v.title || 'Video', milestone, v.youtubeUrl || '');
-    const trafficRequested = hasRequestedSignature('traffic', v.artistName || '', v.title || 'Video', 0, v.youtubeUrl || '');
-    const trafficSubmitting = trafficSubmittingBySource.has(normalizeSourceUrl(v.youtubeUrl || ''));
+    const signature = ['youtube', v.artistName || '', v.title || 'Video', Number(demand.currentTarget || 0)].join('|').toLowerCase();
+    const requested = artTasks.some(function (t) {
+      return String(t.signature || '') === signature && isTaskRequested(t);
+    });
     return `
       <div class="media-row">
         <a href="${esc(v.youtubeUrl || '#')}" target="_blank" rel="noopener" title="Abrir no YouTube">
@@ -2170,18 +1639,13 @@
         <div class="media-info">
           <div class="media-title"><a href="${esc(v.youtubeUrl || '#')}" target="_blank" rel="noopener">${esc(v.title || 'Video')}</a></div>
           <div class="media-date">${fmtDate(v.publishedAt) || 'sem data'}${v.daysOld < 999 ? ` · ${v.daysOld}d` : ''}</div>
+          ${v.needsTraffic ? '<span class="traffic-tag">RODAR TRÁFEGO</span>' : ''}
           ${demand.status !== 'idle' ? `<span class="priority-dot ${esc(demand.status === 'do' ? 'priority-do' : 'priority-queue')}" title="${demand.status === 'do' ? 'Fazer arte' : 'Na fila'}"></span>` : ''}
         </div>
         <div class="media-stat">
           <div class="media-num">${compact(v.views)}</div>
           <div class="media-lbl">views</div>
-        </div>
-        <div class="media-actions">
-          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
-          ${requested ? `<button class="btn sm reset-shortcut" data-reset-request="1" data-type="youtube" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-milestone="${milestone}" data-source="${esc(v.youtubeUrl || '')}">Zerar pedido</button>` : ''}
-          <button class="btn sm ${trafficRequested ? 'requested' : 'orange'}" data-quick-traffic="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-current="${Number(v.views || 0)}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}" ${trafficSubmitting ? 'disabled' : ''}>${trafficRequested ? 'Tráfego solicitado' : (trafficSubmitting ? 'Enviando...' : 'Rodar tráfego')}</button>
-          ${trafficRequested ? `<button class="btn sm reset-shortcut" data-reset-traffic="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-source="${esc(v.youtubeUrl || '')}">Cancelar tráfego</button>` : ''}
-          <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${milestone}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}">Subir artes</button>
+          <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(v.artistName || '')}" data-title="${esc(v.title || 'Video')}" data-type="youtube" data-metric="Views do video" data-current="${Number(v.views || 0)}" data-milestone="${Number(demand.currentTarget || 0)}" data-cover="${esc(v.thumbnail || '')}" data-source="${esc(v.youtubeUrl || '')}">${requested ? 'Solicitada' : 'Solicitar arte'}</button>
         </div>
       </div>
     `;
@@ -2204,7 +1668,6 @@
     const singles = Array.isArray(sp.singles) ? sp.singles : [];
     const topTracks = Array.isArray(sp.topTracks) ? sp.topTracks : [];
     const vids = Array.isArray(yt.latestVideos) ? yt.latestVideos : [];
-    const trackDateByTitle = new Map(topTracks.map(t => [String(t?.title || '').trim().toLowerCase(), t?.releaseDate || '']));
 
     return `
       <article class="card artist-card">
@@ -2238,17 +1701,15 @@
               </div>
             </div>
             <div class="media-list">
-              ${(singles.length ? singles.map(single => {
-                const titleKey = String(single?.title || '').trim().toLowerCase();
-                const fallbackDate = trackDateByTitle.get(titleKey) || '';
-                return singleRow({ ...single, artistName: a.artistName, releaseDate: single.releaseDate || fallbackDate || '' });
-              }).join('') : '').trim() || (topTracks.length ? topTracks.map(t => {
-                const submitting = quickRequestSubmitting.has(quickRequestKey('single', a.artistName || '', t.title || 'Track', 50000));
-                const requested = hasRequestedSignature('single', a.artistName || '', t.title || 'Track', 50000, t.spotifyUrl || a.spotifyArtistUrl || '');
+              ${(singles.length ? singles.map(single => singleRow({ ...single, artistName: a.artistName })).join('') : '').trim() || (topTracks.length ? topTracks.map(t => {
+                const signature = ['single', a.artistName || '', t.title || 'Track', 50000].join('|').toLowerCase();
+                const requested = artTasks.some(function (task) {
+                  return String(task.signature || '') === signature && isTaskRequested(task);
+                });
                 return `
                 <div class="media-row">
                   <a href="${esc(t.spotifyUrl || '#')}" target="_blank" rel="noopener" title="Abrir no Spotify">
-                    <img class="media-thumb single-thumb" src="${esc(t.imageUrl || '')}" alt="${esc(t.title || 'Track')}" loading="lazy">
+                    <img class="media-thumb" src="${esc(t.imageUrl || '')}" alt="${esc(t.title || 'Track')}" loading="lazy">
                   </a>
                   <div class="media-info">
                     <div class="media-title"><a href="${esc(t.spotifyUrl || '#')}" target="_blank" rel="noopener">${esc(t.title || 'Track')}</a></div>
@@ -2256,8 +1717,7 @@
                   </div>
                   <div class="media-stat">
                     <div class="media-num">${compact(t.plays ?? t.streams ?? null)}</div><div class="media-lbl">streams</div>
-                    <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}" ${(requested || submitting) ? 'disabled' : ''}>${requested ? 'Pedido enviado' : (submitting ? 'Enviando...' : 'Pedir arte')}</button>
-                    <button class="btn sm upload-shortcut" data-quick-upload="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}">Subir artes</button>
+                    <button class="btn sm ${requested ? 'requested' : 'dark'}" data-quick-request="1" data-artist="${esc(a.artistName || '')}" data-title="${esc(t.title || 'Track')}" data-type="single" data-metric="Streams do track" data-current="${Number(t.plays ?? t.streams ?? 0)}" data-milestone="50000" data-cover="${esc(t.imageUrl || a.imageUrl || '')}" data-source="${esc(t.spotifyUrl || a.spotifyArtistUrl || '')}">${requested ? 'Solicitada' : 'Solicitar arte'}</button>
                   </div>
                 </div>
               `;
@@ -2306,12 +1766,20 @@
     if (!artists.length) {
       qs('artistGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">Cadastre artistas para iniciar o monitoramento.</div>';
       renderArtForecast();
-      const trafficSection = qs('trafficSection');
-      if (trafficSection) trafficSection.classList.add('hidden');
+      qs('trafficSection').classList.add('hidden');
       return;
     }
 
     const cacheState = loadMatchingCachedDashboard(artists);
+
+    if (forceRefresh) {
+      const remaining = getFullRefreshRemainingMs();
+      if (remaining > 0) {
+        qs('lastSync').textContent = `Atualização geral disponível em ${formatRemainingLong(remaining)}`;
+        updateRefreshButtonState();
+        return;
+      }
+    }
 
     try {
       let dashboardArtists = artists;
@@ -2331,13 +1799,10 @@
       mergeArtistIdsFromResponse(data.artists || []);
       renderDashboardPayload(data);
       saveCachedDashboard(artists, data);
+      if (forceRefresh) setLastFullRefresh(Date.now());
       updateRefreshButtonState();
       const backendLabel = activeBackendUrl === BACKEND_LOCAL_URL ? 'local' : 'produção';
-      const skipped = Number(data.skippedArtists || 0);
       qs('lastSync').textContent = `Sincronizado ${new Date(data.fetchedAt).toLocaleString('pt-BR')} (${backendLabel})`;
-      if (skipped > 0) {
-        qs('lastSync').textContent += ` · ${skipped} artista(s) pendente(s) nesta rodada`;
-      }
     } catch (err) {
       if (cacheState?.cached?.payload) {
         renderDashboardPayload(cacheState.cached.payload);
@@ -2379,160 +1844,29 @@
     loadDashboard({ artistsToRefresh: [newArtist] });
   }
 
-  function openTrafficDrawerForVideo(draft) {
-    const existingTrafficTask = findRequestedTrafficTask(draft.artistName || '', draft.videoTitle || '', draft.sourceUrl || '');
-    trafficEditTargetTask = existingTrafficTask;
-    trafficDraft = {
-      artistName: draft.artistName || 'Artista',
-      videoTitle: draft.videoTitle || 'Video',
-      currentViews: Number(draft.currentViews || 0),
-      sourceUrl: draft.sourceUrl || '',
-      coverUrl: draft.coverUrl || '',
-      budget: Number(draft.budget || budgetFromTrafficTask(existingTrafficTask) || 0),
-      viewsTarget: Number(draft.viewsTarget || existingTrafficTask?.trafficViewsTarget || existingTrafficTask?.milestone || 0),
-    };
-
-    setTrafficDrawerMode(existingTrafficTask ? 'edit' : 'create');
-
-    if (trafficSummary) {
-      trafficSummary.textContent = `${trafficDraft.artistName} · ${trafficDraft.videoTitle} · Atual ${formatViews(trafficDraft.currentViews)} views`;
-    }
-
-    if (trafficDraft.viewsTarget > 0) {
-      fillTrafficByViews(trafficDraft.viewsTarget);
-    } else if (trafficDraft.budget > 0) {
-      fillTrafficByBudget(trafficDraft.budget);
-    } else {
-      if (trafficBudgetInput) trafficBudgetInput.value = '';
-      if (trafficViewsInput) trafficViewsInput.value = '';
-      updateTrafficEstimateHint(0, 0);
-    }
-
-    openDrawer(trafficDrawer);
-    trafficViewsInput?.focus();
-  }
-
-  trafficViewsInput?.addEventListener('input', () => {
-    if (trafficInputLock) return;
-    trafficInputLock = true;
-    const views = parseViewsInput(trafficViewsInput.value);
-    fillTrafficByViews(views);
-    if (trafficDraft) {
-      trafficDraft.viewsTarget = views;
-      trafficDraft.budget = views * TRAFFIC_COST_PER_VIEW;
-    }
-    trafficInputLock = false;
-  });
-
-  trafficSendBtn?.addEventListener('click', async () => {
-    if (!trafficDraft) {
-      showToast('Selecione um vídeo para solicitar tráfego.', 'warn');
-      return;
-    }
-
-    const sourceKey = normalizeSourceUrl(trafficDraft.sourceUrl);
-    if (sourceKey && trafficSubmittingBySource.has(sourceKey)) return;
-
-    const budget = parseBrCurrencyInput(trafficBudgetInput?.value || '');
-    const viewsTarget = parseViewsInput(trafficViewsInput?.value || '');
-    if (!budget || !viewsTarget) {
-      showToast('Preencha investimento e meta de visualizações.', 'warn');
-      return;
-    }
-
-    trafficDraft.budget = budget;
-    trafficDraft.viewsTarget = viewsTarget;
-
-    try {
-      setTrafficSubmitting(trafficDraft.sourceUrl, true);
-      if (trafficSendBtn) {
-        trafficSendBtn.disabled = true;
-        trafficSendBtn.textContent = 'Enviando...';
-      }
-
-      if (trafficEditTargetTask && isTaskRequested(trafficEditTargetTask)) {
-        await clearGavetaRequestByTask(trafficEditTargetTask);
-        trafficEditTargetTask.requested = false;
-        trafficEditTargetTask.calendarEventId = '';
-        trafficEditTargetTask.upstreamTaskId = '';
-        if (trafficEditTargetTask.status !== 'done') trafficEditTargetTask.status = 'pending';
-      }
-
-      await requestTrafficFromDraft(trafficDraft);
-      showToast('Solicitação de tráfego enviada para agenda.', 'success');
-      closeDrawers();
-      await refreshRemoteRequests();
-      await loadDashboard();
-    } catch (err) {
-      showErrorToast(err, 'Falha ao enviar solicitação de tráfego.');
-    } finally {
-      setTrafficSubmitting(trafficDraft.sourceUrl, false);
-      if (trafficSendBtn) {
-        trafficSendBtn.disabled = false;
-        setTrafficDrawerMode(trafficEditTargetTask ? 'edit' : 'create');
-      }
-    }
-  });
-
   qs('addBtn').addEventListener('click', () => openDrawer(addDrawer));
+  artBtn.addEventListener('click', () => {
+    artArtistFilter = '';
+    openDrawer(artDrawer);
+    renderArtTasks();
+  });
   qs('refreshBtn').addEventListener('click', () => {
+    if (!confirmFullRefresh()) return;
     loadDashboard({ forceRefresh: true });
   });
   qs('manageBtn').addEventListener('click', () => openDrawer(manageDrawer));
   qs('closeAdd').addEventListener('click', closeDrawers);
   qs('closeManage').addEventListener('click', closeDrawers);
-  closeRequestBtn?.addEventListener('click', closeDrawers);
   closeArtBtn.addEventListener('click', closeDrawers);
-  closeTrafficBtn?.addEventListener('click', closeDrawers);
   backdrop.addEventListener('click', closeDrawers);
   qs('saveArtist').addEventListener('click', saveArtist);
 
-  artTabPending?.addEventListener('click', () => { artActiveTab = 'pending'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabProgress?.addEventListener('click', () => { artActiveTab = 'progress'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabReady?.addEventListener('click', () => { artActiveTab = 'ready'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
-  artTabDone?.addEventListener('click', () => { artActiveTab = 'done'; artArtistFilter = ''; artTaskFocusId = ''; renderArtTasks(); });
+  artTabPending.addEventListener('click', () => { artActiveTab = 'pending'; artArtistFilter = ''; renderArtTasks(); });
+  artTabProgress.addEventListener('click', () => { artActiveTab = 'progress'; artArtistFilter = ''; renderArtTasks(); });
+  artTabReady.addEventListener('click', () => { artActiveTab = 'ready'; artArtistFilter = ''; renderArtTasks(); });
+  artTabDone.addEventListener('click', () => { artActiveTab = 'done'; artArtistFilter = ''; renderArtTasks(); });
 
-  resetRequestsBtn?.addEventListener('click', async () => {
-    const selectedTask = artTasks.find(t => t.id === artTaskFocusId);
-    if (!selectedTask) {
-      showToast('Selecione primeiro o item que deseja zerar.', 'warn');
-      return;
-    }
-
-    const confirmReset = window.confirm(`Deseja zerar apenas a solicitacao de ${selectedTask.artistName || 'Artista'} - ${selectedTask.itemTitle || 'Item'}?`);
-    if (!confirmReset) return;
-
-    try {
-      const resetData = await clearGavetaRequestByTask(selectedTask);
-      if (Array.isArray(resetData?.requests)) {
-        remoteRequests = resetData.requests;
-      }
-      const selectedSig = String(selectedTask.signature || taskSignature(selectedTask));
-      const selectedLoose = taskLooseSignatureFromParts(selectedTask.type, selectedTask.artistName, selectedTask.itemTitle);
-      const selectedSource = normalizeSourceUrl(selectedTask.sourceUrl);
-      remoteRequests = remoteRequests.filter(req => {
-        const reqSig = String(req.signature || '');
-        const reqLoose = taskLooseSignatureFromParts(req.type, req.artistName, req.itemTitle);
-        const reqSource = normalizeSourceUrl(req.sourceUrl);
-        if (reqSig && reqSig === selectedSig) return false;
-        if (selectedLoose && reqLoose === selectedLoose) return false;
-        if (selectedSource && reqSource && reqSource === selectedSource) return false;
-        return true;
-      });
-      selectedTask.requested = false;
-      selectedTask.calendarEventId = '';
-      selectedTask.upstreamTaskId = '';
-      if (selectedTask.status !== 'done') selectedTask.status = 'pending';
-      saveArtTasks();
-      showToast('Solicitacao do item selecionado foi zerada.', 'success');
-      await refreshRemoteRequests();
-      await loadDashboard();
-    } catch (err) {
-      showErrorToast(err, 'Nao foi possivel zerar esta solicitacao agora.');
-    }
-  });
-
-  artAddManualBtn?.addEventListener('click', () => {
+  artAddManualBtn.addEventListener('click', () => {
     const artistName = window.prompt('Nome do artista');
     if (!artistName) return;
     const itemTitle = window.prompt('Titulo da arte (ex: Single X 100k)');
@@ -2558,9 +1892,9 @@
 
     try {
       await importArtists(file);
-      showToast('Lista importada com sucesso.', 'success');
+      alert('Lista importada com sucesso.');
     } catch (error) {
-      showErrorToast(error, 'Falha ao importar lista.');
+      alert(error.message || 'Falha ao importar lista.');
     }
   });
 
@@ -2585,87 +1919,17 @@
   menuCloseBtn.addEventListener('click', closeMenuDrawer);
   menuAddBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(addDrawer); });
   menuManageBtn.addEventListener('click', () => { closeMenuDrawer(); openDrawer(manageDrawer); });
-  menuRefreshBtn.addEventListener('click', () => { closeMenuDrawer(); loadDashboard({ forceRefresh: true }); });
+  menuArtBtn.addEventListener('click', () => {
+    closeMenuDrawer();
+    artArtistFilter = '';
+    openDrawer(artDrawer);
+    renderArtTasks();
+  });
+  menuRefreshBtn.addEventListener('click', () => { closeMenuDrawer(); if (confirmFullRefresh()) loadDashboard({ forceRefresh: true }); });
   menuExportBtn.addEventListener('click', () => { closeMenuDrawer(); exportArtists(); });
   menuImportBtn.addEventListener('click', () => { closeMenuDrawer(); qs('importInput').click(); });
 
   qs('artistGrid').addEventListener('click', async (event) => {
-    const resetTrafficBtn = event.target.closest('[data-reset-traffic]');
-    if (resetTrafficBtn) {
-      try {
-        await resetMediaRequestByParams({
-          type: 'traffic',
-          artistName: resetTrafficBtn.getAttribute('data-artist') || '',
-          itemTitle: resetTrafficBtn.getAttribute('data-title') || '',
-          milestone: 0,
-          sourceUrl: resetTrafficBtn.getAttribute('data-source') || '',
-        }, 'Solicitação de tráfego cancelada.');
-      } catch (err) {
-        showErrorToast(err, 'Não foi possível cancelar o tráfego deste item.');
-      }
-      return;
-    }
-
-    const resetRequestBtn = event.target.closest('[data-reset-request]');
-    if (resetRequestBtn) {
-      try {
-        await resetMediaRequestByParams({
-          type: resetRequestBtn.getAttribute('data-type') || 'manual',
-          artistName: resetRequestBtn.getAttribute('data-artist') || '',
-          itemTitle: resetRequestBtn.getAttribute('data-title') || '',
-          milestone: Number(resetRequestBtn.getAttribute('data-milestone') || 0),
-          sourceUrl: resetRequestBtn.getAttribute('data-source') || '',
-        }, 'Pedido enviado zerado para este item.');
-      } catch (err) {
-        showErrorToast(err, 'Não foi possível zerar o pedido deste item.');
-      }
-      return;
-    }
-
-    const trafficBtn = event.target.closest('[data-quick-traffic]');
-    if (trafficBtn) {
-      openTrafficDrawerForVideo({
-        artistName: trafficBtn.getAttribute('data-artist') || 'Artista',
-        videoTitle: trafficBtn.getAttribute('data-title') || 'Video',
-        currentViews: Number(trafficBtn.getAttribute('data-current') || 0),
-        sourceUrl: trafficBtn.getAttribute('data-source') || '',
-        coverUrl: trafficBtn.getAttribute('data-cover') || '',
-      });
-      return;
-    }
-
-    const uploadBtn = event.target.closest('[data-quick-upload]');
-    if (uploadBtn) {
-      const taskPayload = {
-        type: uploadBtn.getAttribute('data-type') || 'manual',
-        artistName: uploadBtn.getAttribute('data-artist') || 'Artista',
-        itemTitle: uploadBtn.getAttribute('data-title') || 'Solicitação',
-        currentValue: Number(uploadBtn.getAttribute('data-current') || 0),
-        milestone: Number(uploadBtn.getAttribute('data-milestone') || 0),
-        metricLabel: uploadBtn.getAttribute('data-metric') || 'Solicitação direta',
-        coverUrl: uploadBtn.getAttribute('data-cover') || '',
-        sourceUrl: uploadBtn.getAttribute('data-source') || '',
-        demandStatus: 'do',
-      };
-
-      ensureAutoTask(taskPayload);
-      const task = artTasks.find(t => String(t.signature || '') === taskSignature(taskPayload));
-      if (!task) return;
-
-      if (task.status === 'pending') {
-        artActiveTab = 'pending';
-      } else if (task.status === 'ready' || task.status === 'done') {
-        artActiveTab = task.status;
-      } else {
-        artActiveTab = 'progress';
-      }
-      artArtistFilter = task.artistName || '';
-      artTaskFocusId = task.id;
-      openDrawer(artDrawer);
-      renderArtTasks();
-      return;
-    }
-
     const btn = event.target.closest('[data-quick-request]');
     if (!btn) return;
 
@@ -2685,32 +1949,15 @@
     const task = artTasks.find(t => String(t.signature || '') === taskSignature(taskPayload));
     if (!task) return;
 
-    const submitKey = quickRequestKey(taskPayload.type, taskPayload.artistName, taskPayload.itemTitle, taskPayload.milestone);
-    if (quickRequestSubmitting.has(submitKey) || isTaskRequested(task)) {
-      artArtistFilter = '';
-      artActiveTab = task.status || 'pending';
-      artTaskFocusId = task.id;
-      openDrawer(requestDrawer);
-      renderRequestTasks();
-      return;
-    }
-
     try {
-      quickRequestSubmitting.add(submitKey);
-      refreshQuickRequestButtonsInGrid();
       await requestTaskFromTask(task);
       saveArtTasks();
-      showToast('Pedido enviado e confirmado na agenda.', 'success');
-      artArtistFilter = '';
+      artArtistFilter = task.artistName;
       artActiveTab = 'progress';
-      artTaskFocusId = task.id;
-      openDrawer(requestDrawer);
-      renderRequestTasks();
+      openDrawer(artDrawer);
+      renderArtTasks();
     } catch (err) {
       alert(err.message || 'Falha ao enviar solicitação para agenda.');
-    } finally {
-      quickRequestSubmitting.delete(submitKey);
-      refreshQuickRequestButtonsInGrid();
     }
   });
 
@@ -2736,7 +1983,6 @@
     });
     renderArtIndicators();
     renderArtForecast();
-    renderRequestTasks();
     renderArtTasks();
     renderGavetaRequests();
     await refreshRemoteRequests();
@@ -2753,25 +1999,5 @@
     loadDashboard();
   })();
 </script>
-  </script>
-  <div class="footer-dev">
-    Desenvolvido por: <strong>Dado Cruz</strong>
-  </div>
-  </body>
-  </html>
-  .footer-dev {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    background: rgba(16,16,20,0.92);
-    color: #fff;
-    font-size: 13px;
-    padding: 8px 18px;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-    z-index: 2000;
-    opacity: 0.92;
-    pointer-events: none;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 0.01em;
-  }
+</body>
+</html>

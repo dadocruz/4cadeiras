@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chay Frentas • Portal de Operação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0b0f;
+  --surface: #131318;
+  --surface2: #1a1a22;
+  --border: #2a2a35;
+  --accent: #e8b84b;
+  --accent2: #ff6b35;
+  --text: #f0eff5;
+  --muted: #7a7990;
+  --green: #3de08a;
+  --red: #ff4d6d;
+  --blue: #5b8af5;
+  --purple: #9b6dff;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .logo-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+.sidebar-logo .logo-sub {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.nav-section {
+  padding: 16px 0 8px;
+}
+.nav-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 24px;
+  margin-bottom: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 24px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: all .2s;
+  text-decoration: none;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,.04); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,184,75,.07); }
+.nav-item .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* MAIN */
+.main {
+  margin-left: 220px;
+  min-height: 100vh;
+}
+
+/* SECTIONS */
+.section {
+  display: none;
+  padding: 48px 48px 80px;
+  animation: fadeIn .3s ease;
+}
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+/* HEADER */
+.page-header {
+  margin-bottom: 36px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: var(--text);
+}
+.page-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.badge-red { background: rgba(255,77,109,.15); color: var(--red); }
+.badge-yellow { background: rgba(232,184,75,.15); color: var(--accent); }
+.badge-green { background: rgba(61,224,138,.15); color: var(--green); }
+.badge-blue { background: rgba(91,138,245,.15); color: var(--blue); }
+.badge-purple { background: rgba(155,109,255,.15); color: var(--purple); }
+
+/* CARDS */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.card:hover { border-color: rgba(232,184,75,.3); transform: translateY(-2px); }
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.card.accent-yellow::before { background: linear-gradient(90deg, var(--accent), transparent); }
+.card.accent-red::before { background: linear-gradient(90deg, var(--red), transparent); }
+.card.accent-green::before { background: linear-gradient(90deg, var(--green), transparent); }
+.card.accent-blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+.card.accent-purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+.card-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.card-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: var(--text);
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.stat-box .val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-box .lbl {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* TABLE */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.table-title {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead th {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface2);
+  font-weight: 500;
+}
+tbody tr {
+  border-top: 1px solid var(--border);
+  transition: background .15s;
+}
+tbody tr:hover { background: rgba(255,255,255,.025); }
+tbody td {
+  padding: 13px 20px;
+  font-size: 13px;
+  color: var(--text);
+}
+.mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+/* STATUS PILLS */
+.status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 30px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.s-aberto { background: rgba(255,77,109,.15); color: var(--red); }
+.s-andamento { background: rgba(232,184,75,.15); color: var(--accent); }
+.s-planejar { background: rgba(91,138,245,.15); color: var(--blue); }
+.s-aguardando { background: rgba(155,109,255,.15); color: var(--purple); }
+.s-concluido { background: rgba(61,224,138,.15); color: var(--green); }
+
+/* PRIORITY */
+.prio { font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+.prio-urgente { color: var(--red); }
+.prio-alta { color: var(--accent); }
+.prio-media { color: var(--blue); }
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* TIMELINE */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 32px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: var(--border);
+}
+.tl-item {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -22px; top: 20px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+}
+.tl-item.urgent::before { background: var(--red); }
+.tl-item .tl-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tl-item .tl-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.tl-item .tl-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* CHECKLIST */
+.checklist {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.checklist-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.check-icon {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+.check-icon.done { background: var(--green); border-color: var(--green); color: #000; }
+.check-icon.pending { border-color: var(--red); }
+.check-label { flex: 1; }
+.check-owner { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* PRINCIPLES */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.principle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.principle-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--accent);
+  opacity: .4;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.principle-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+
+/* WORKFLOW STEPS */
+.workflow {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.wf-step {
+  flex: 1;
+  min-width: 130px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-right: none;
+  padding: 20px 16px;
+  position: relative;
+  text-align: center;
+}
+.wf-step:first-child { border-radius: 10px 0 0 10px; }
+.wf-step:last-child { border-right: 1px solid var(--border); border-radius: 0 10px 10px 0; }
+.wf-step::after {
+  content: '›';
+  position: absolute;
+  right: -10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: bold;
+  z-index: 2;
+}
+.wf-step:last-child::after { display: none; }
+.wf-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: var(--accent);
+  opacity: .3;
+  line-height: 1;
+}
+.wf-name { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 4px; }
+.wf-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+/* PRICING */
+.price-table td:nth-child(5) { color: var(--accent); font-family: 'DM Mono', monospace; font-weight: 600; }
+.price-table td:nth-child(7) { color: var(--green); font-family: 'DM Mono', monospace; }
+
+/* AGENDA ITEMS */
+.agenda-list { margin-bottom: 28px; }
+.agenda-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.agenda-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--accent);
+  opacity: .5;
+  line-height: 1;
+  min-width: 30px;
+}
+.agenda-text { font-size: 14px; color: var(--text); padding-top: 3px; line-height: 1.5; }
+
+/* ARTIST CARD */
+.artist-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.artist-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.artist-info .name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.artist-info .handle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.artist-stats {
+  margin-left: auto;
+  display: flex;
+  gap: 24px;
+}
+.artist-stat { text-align: center; }
+.artist-stat .v {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  line-height: 1;
+}
+.artist-stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* URGENCY BANNER */
+.urgency-banner {
+  background: linear-gradient(135deg, rgba(255,77,109,.15), rgba(255,107,53,.1));
+  border: 1px solid rgba(255,77,109,.35);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.urgency-icon { font-size: 28px; }
+.urgency-title { font-size: 16px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
+.urgency-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* INTEGRATION CARDS */
+.integration-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.int-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  color: inherit;
+}
+.int-card:hover { border-color: rgba(232,184,75,.4); transform: translateY(-3px); }
+.int-icon { font-size: 32px; margin-bottom: 10px; }
+.int-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.int-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+.info-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+}
+.info-block h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+.info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-row .ik { color: var(--muted); }
+.info-row .iv { color: var(--text); font-weight: 500; }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-grid .full { grid-column:1 / -1; }
+.field { display:grid; gap:6px; }
+.field label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.field input, .field textarea, .field select {
+  width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  border-radius:8px; padding:10px 12px; font-family:'DM Sans', sans-serif; font-size:13px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)); color:#111; border:none;
+  border-radius:10px; padding:11px 16px; font-weight:700; cursor:pointer;
+}
+.hint { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.api-list { display:grid; gap:8px; margin-top:10px; }
+.api-item { padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--surface2); font-size:12px; }
+
+/* SCROLL BAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .main { margin-left: 0; }
+  .section { padding: 24px 20px 60px; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .integration-row { grid-template-columns: 1fr; }
+  .workflow { flex-direction: column; }
+  .wf-step { border-right: 1px solid var(--border); border-bottom: none; border-radius: 0; }
+  .wf-step:first-child { border-radius: 10px 10px 0 0; }
+  .wf-step:last-child { border-bottom: 1px solid var(--border); border-radius: 0 0 10px 10px; }
+  .wf-step::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">CHAY FRENTAS</div>
+    <div class="logo-sub">Portal de Operação MKT</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Visão Geral</div>
+    <a class="nav-item active" onclick="show('dashboard')">
+      <div class="dot" style="background:#e8b84b"></div> Dashboard
+    </a>
+    <a class="nav-item" onclick="show('agenda-reuniao')">
+      <div class="dot" style="background:#ff4d6d"></div> Reunião com Chay
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Projetos</div>
+    <a class="nav-item" onclick="show('evento')">
+      <div class="dot" style="background:#ff6b35"></div> Evento 22/05
+    </a>
+    <a class="nav-item" onclick="show('patrick')">
+      <div class="dot" style="background:#5b8af5"></div> Patrick Souza
+    </a>
+    <a class="nav-item" onclick="show('mayke')">
+      <div class="dot" style="background:#9b6dff"></div> Mayke Yuri
+    </a>
+    <a class="nav-item" onclick="show('artista3')">
+      <div class="dot" style="background:#3de08a"></div> Artista 3
+    </a>
+    <a class="nav-item" onclick="show('chay')">
+      <div class="dot" style="background:#e8b84b"></div> Chay Produtor
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Gestão</div>
+    <a class="nav-item" onclick="show('timeline')">
+      <div class="dot" style="background:#e8b84b"></div> Linha do Tempo
+    </a>
+    <a class="nav-item" onclick="show('workflow')">
+      <div class="dot" style="background:#3de08a"></div> Fluxo de Trabalho
+    </a>
+    <a class="nav-item" onclick="show('precificacao')">
+      <div class="dot" style="background:#ff6b35"></div> Precificação
+    </a>
+    <a class="nav-item" onclick="show('briefing')">
+      <div class="dot" style="background:#5b8af5"></div> Ficha de Pedido
+    </a>
+    <a class="nav-item" onclick="show('integracoes')">
+      <div class="dot" style="background:#9b6dff"></div> Integrações
+    </a>
+    <a class="nav-item" onclick="show('configuracoes')">
+      <div class="dot" style="background:#e8b84b"></div> ⚙️ Configurações
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div style="color:var(--accent);font-weight:600;margin-bottom:4px;">Regra de ouro</div>
+    Sem briefing + assets + entrada → job não entra na fila.
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="section active" id="dashboard">
+    <div class="page-header">
+      <div>
+        <div class="page-title">DASHBOARD</div>
+        <div class="page-subtitle">Operação de Marketing • Chay Frentas</div>
+      </div>
+      <span class="badge badge-red">🔥 Evento em 41 dias</span>
+    </div>
+
+    <div class="urgency-banner">
+      <div class="urgency-icon">⚡</div>
+      <div>
+        <div class="urgency-title">PRIORIDADE ABSOLUTA AGORA</div>
+        <div class="urgency-text">Arte de lançamento do evento 4 Cadeiras para segunda-feira. Chay precisa enviar: nome oficial, fotos dos artistas, logos e horário <strong style="color:var(--text)">até domingo 13/04.</strong></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="val">5</div>
+        <div class="lbl">Projetos Ativos</div>
+      </div>
+      <div class="stat-box">
+        <div class="val" style="color:var(--red)">4</div>
+        <div class="lbl">Tarefas Urgentes</div>
+      </div>
+      <div class="stat-box">
+        <div class="val" style="color:var(--blue)">12</div>
+        <div class="lbl">Tarefas em Aberto</div>
+      </div>
+      <div class="stat-box">
+        <div class="val" style="color:var(--green)">€ 1.190</div>
+        <div class="lbl">Receita Proposta</div>
+      </div>
+    </div>
+
+    <div class="section-title">Sequência de Prioridades</div>
+    <div class="timeline">
+      <div class="tl-item urgent">
+        <div class="tl-date">AGORA • 13–14 ABR</div>
+        <div class="tl-title">Arte de lançamento do evento 4 Cadeiras</div>
+        <div class="tl-desc">Coleta de assets com Chay → Arte feed + story para publicar segunda-feira.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">SEMANA 1 • até 18 ABR</div>
+        <div class="tl-title">Portal mestre + cadastro dos artistas + proposta comercial</div>
+        <div class="tl-desc">Organizar ficha de cada artista, definir preços e forma de pagamento.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">SEMANA 2 • até 25 ABR</div>
+        <div class="tl-title">Plano editorial do evento + artes individuais + bilhetes</div>
+        <div class="tl-desc">Identidade visual, reels de aquecimento, contagem regressiva e flyers digitais.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">SEMANA 3 • até 02 MAI</div>
+        <div class="tl-title">Máquina de serviços para clientes + autoridade do Chay como produtor</div>
+        <div class="tl-desc">Portfólio digital, catálogo de composições, presença e autoridade online.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Princípios da Operação</div>
+    <div class="principles">
+      <div class="principle"><div class="principle-num">1</div><div class="principle-text">Nada começa sem briefing mínimo e assets entregues.</div></div>
+      <div class="principle"><div class="principle-num">2</div><div class="principle-text">Tudo entra no portal, não por áudio solto ou mensagem avulsa.</div></div>
+      <div class="principle"><div class="principle-num">3</div><div class="principle-text">Cada frente tem dono, prazo e status definidos.</div></div>
+      <div class="principle"><div class="principle-num">4</div><div class="principle-text">Pagamento/entrada confirmados antes da produção começar.</div></div>
+      <div class="principle"><div class="principle-num">5</div><div class="principle-text">O evento de 22/05 é a prioridade imediata de toda a operação.</div></div>
+    </div>
+  </div>
+
+  <!-- REUNIÃO -->
+  <div class="section" id="agenda-reuniao">
+    <div class="page-header">
+      <div>
+        <div class="page-title">REUNIÃO COM CHAY</div>
+        <div class="page-subtitle">Roteiro estruturado para alinhar tudo de uma vez</div>
+      </div>
+      <span class="badge badge-red">Urgente</span>
+    </div>
+
+    <div class="urgency-banner">
+      <div class="urgency-icon">🎯</div>
+      <div>
+        <div class="urgency-title">Objetivo desta reunião</div>
+        <div class="urgency-text">Sair com: arte do evento aprovada para segunda, preços definidos para Patrick e Mayke, e Chay usando o portal em vez de áudio solto.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Pauta</div>
+    <div class="agenda-list">
+      <div class="agenda-item">
+        <div class="agenda-n">1</div>
+        <div class="agenda-text">Confirmar prioridade absoluta: evento 22/05. Arte para segunda-feira. <strong>Chay precisa enviar assets hoje.</strong></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">2</div>
+        <div class="agenda-text">Aprovar o novo fluxo: nada fora do portal/ficha. Mostrar esta página e explicar como vai funcionar.</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">3</div>
+        <div class="agenda-text">Preencher briefing do evento ao vivo nesta reunião (usar a aba "Ficha de Pedido").</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">4</div>
+        <div class="agenda-text">Definir serviços e preços para Patrick Souza e Mayke Yuri (os 2 com capacidade de pagamento). Apresentar tabela de preços.</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">5</div>
+        <div class="agenda-text">Escolher onde o portal vai viver: Google Sheets + Drive ou Notion + Drive. Decisão aqui.</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">6</div>
+        <div class="agenda-text">Definir o que entra no portfólio do Chay nesta primeira fase (bio, serviços, 3 cases).</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-n">7</div>
+        <div class="agenda-text">Fechar próximos 7 dias com responsáveis e datas claras. Quem faz o quê e quando.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Regra da Reunião</div>
+    <div class="info-block">
+      <p style="color:var(--muted);font-size:13px;line-height:1.7">
+        Se o Chay começar a ir para assuntos paralelos, volte gentilmente para a pauta: <em style="color:var(--accent)">"Chay, anota essa ideia aqui para a gente tratar depois — agora a gente precisa resolver o ponto X."</em><br><br>
+        O objetivo não é resolver tudo hoje. É resolver <strong style="color:var(--text)">as 3 coisas certas</strong>: arte do evento, preços dos artistas e fluxo de trabalho.
+      </p>
+    </div>
+  </div>
+
+  <!-- EVENTO -->
+  <div class="section" id="evento">
+    <div class="page-header">
+      <div>
+        <div class="page-title">EVENTO 22/05</div>
+        <div class="page-subtitle">4 Cadeiras • Jardim do Eden • Lisboa • Sertanejo</div>
+      </div>
+      <span class="badge badge-red">🔥 41 dias</span>
+    </div>
+
+    <div class="urgency-banner">
+      <div class="urgency-icon">🎨</div>
+      <div>
+        <div class="urgency-title">Arte de lançamento para SEGUNDA-FEIRA 14/04</div>
+        <div class="urgency-text">Chay precisa enviar todos os assets <strong style="color:var(--text)">até domingo 13/04</strong>. Sem assets = sem arte = evento sem lançamento no prazo.</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="info-block">
+        <h3>Informações do Evento</h3>
+        <div class="info-row"><span class="ik">Nome</span><span class="iv">4 Cadeiras</span></div>
+        <div class="info-row"><span class="ik">Data</span><span class="iv">22 de Maio de 2026</span></div>
+        <div class="info-row"><span class="ik">Local</span><span class="iv">Jardim do Eden, Lisboa</span></div>
+        <div class="info-row"><span class="ik">Conceito</span><span class="iv">Noite Sertaneja em Lisboa</span></div>
+        <div class="info-row"><span class="ik">Instagram</span><span class="iv"><a href="https://www.instagram.com/4cadeirasoficial/" target="_blank" style="color:var(--accent)">@4cadeirasoficial</a></span></div>
+      </div>
+      <div class="info-block">
+        <h3>Público-alvo</h3>
+        <div class="info-row"><span class="ik">Perfil</span><span class="iv">Brasileiros e portugueses em Lisboa</span></div>
+        <div class="info-row"><span class="ik">Afinidade</span><span class="iv">Sertanejo, universitários, nightlife BR</span></div>
+        <div class="info-row"><span class="ik">Mensagem</span><span class="iv">Experiência próxima e artistas fortes</span></div>
+        <div class="info-row"><span class="ik">CTA</span><span class="iv">Reserve já o seu lugar</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Plano de Campanha</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Fase</th><th>Objetivo</th><th>Peças</th><th>Quando</th><th>Responsável</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Lançamento</strong></td>
+            <td>Anunciar evento e abrir interesse</td>
+            <td>Arte principal + story + reel</td>
+            <td class="mono">14/04</td>
+            <td>Você</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+          </tr>
+          <tr>
+            <td><strong>Aquecimento</strong></td>
+            <td>Criar repetição e desejo</td>
+            <td>Countdown + cortes + bastidores</td>
+            <td class="mono">15/04–10/05</td>
+            <td>Você + artistas</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Conversão</strong></td>
+            <td>Empurrar venda e confirmar presença</td>
+            <td>Oferta + prova social + influencers + CTA</td>
+            <td class="mono">11/05–22/05</td>
+            <td>Você + Chay</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cobertura</strong></td>
+            <td>Gerar prova e autoridade</td>
+            <td>Stories + reels do evento + recap</td>
+            <td class="mono">Dia + pós</td>
+            <td>Equipe local</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Checklist de Assets — Arte de Segunda</div>
+    <div class="checklist">
+      <div class="checklist-header">📋 Chay precisa enviar até domingo 13/04</div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Nome oficial do evento (título exato a ser publicado)</div>
+        <div class="check-owner">Chay · 13/04</div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Data e horário completo (22/05 + hora de abertura)</div>
+        <div class="check-owner">Chay · 13/04</div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Endereço/local exato (Jardim do Eden, Lisboa)</div>
+        <div class="check-owner">Chay · 13/04</div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Foto de cada artista (alta resolução, vertical preferencial)</div>
+        <div class="check-owner">Chay / artistas · 13/04</div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Logo do evento / parceiros (PNG transparente)</div>
+        <div class="check-owner">Produção · 13/04</div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon pending">✗</div>
+        <div class="check-label">Preço / link de bilhete (se já existir)</div>
+        <div class="check-owner">Produção · 13/04</div>
+      </div>
+    </div>
+
+    <div class="section-title">Entregáveis do Evento</div>
+    <div class="card-grid">
+      <div class="card accent-red">
+        <div class="card-label">🚨 Urgente</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Arte principal de lançamento</div>
+        <div class="card-desc">Feed 1080×1350 + variação story. Entrega: 14/04.</div>
+      </div>
+      <div class="card accent-yellow">
+        <div class="card-label">Alta prioridade</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Reel de lançamento</div>
+        <div class="card-desc">Vídeo curto com CTA e continuidade visual. Com trilha e motion.</div>
+      </div>
+      <div class="card accent-blue">
+        <div class="card-label">Aquecimento</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Countdown regressivo</div>
+        <div class="card-desc">6 peças: faltam 15, 10, 7, 5, 3, 1 dias. Template replicável.</div>
+      </div>
+      <div class="card accent-blue">
+        <div class="card-label">Aquecimento</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Artes individuais de cada artista</div>
+        <div class="card-desc">Uma peça por artista destacando sua presença no evento.</div>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-label">Conversão</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Flyer digital + bilhete</div>
+        <div class="card-desc">Identidade visual consistente. Para compartilhar e stories.</div>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-label">Conversão</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Pacote de anúncios + influencers</div>
+        <div class="card-desc">Briefing para influenciadores + artes de tráfego pago.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATRICK SOUZA -->
+  <div class="section" id="patrick">
+    <div class="page-header">
+      <div>
+        <div class="page-title">PATRICK SOUZA</div>
+        <div class="page-subtitle">Artista 1 • Sertanejo • Plano Operacional de MKT</div>
+      </div>
+      <span class="badge badge-blue">Artista</span>
+    </div>
+
+    <div class="artist-header">
+      <div class="artist-avatar" style="background:rgba(91,138,245,.2);color:#5b8af5">PS</div>
+      <div class="artist-info">
+        <div class="name" style="color:#5b8af5">PATRICK SOUZA</div>
+        <div class="handle">Artista prioritário — com capacidade de pagamento</div>
+      </div>
+      <div class="artist-stats">
+        <div class="artist-stat">
+          <div class="v" style="color:#5b8af5">—</div>
+          <div class="l">Seguidores</div>
+        </div>
+        <div class="artist-stat">
+          <div class="v" style="color:#5b8af5">—</div>
+          <div class="l">Engajamento</div>
+        </div>
+        <div class="artist-stat">
+          <div class="v" style="color:#5b8af5">—</div>
+          <div class="l">Meta</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="urgency-banner" style="background:rgba(91,138,245,.1);border-color:rgba(91,138,245,.3)">
+      <div class="urgency-icon">📋</div>
+      <div>
+        <div class="urgency-title" style="color:#5b8af5">Briefing pendente</div>
+        <div class="urgency-text">Chay precisa preencher a ficha completa do Patrick. Sem briefing, assets e entrada confirmada → nenhum job entra na fila de produção.</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="info-block">
+        <h3>Plano do Artista</h3>
+        <div class="info-row"><span class="ik">Posicionamento</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Objetivo MKT</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Público-alvo</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Prioridade do mês</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Canais</span><span class="iv">Instagram / YouTube / TikTok</span></div>
+      </div>
+      <div class="info-block">
+        <h3>Checklist de Entrada</h3>
+        <div class="check-item" style="padding:10px 0;border-top:none">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Briefing preenchido</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Assets anexados</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Data de uso confirmada</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Preço aprovado</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Entrada recebida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Serviços Disponíveis</div>
+    <div class="table-wrap">
+      <table class="price-table">
+        <thead><tr><th>Serviço</th><th>Escopo</th><th>Prazo</th><th>Preço (€)</th><th>Entrada (€)</th></tr></thead>
+        <tbody>
+          <tr><td>Pacote lançamento single</td><td>Capa + story + motion agenda + release</td><td>7 dias</td><td>€ 250</td><td>€ 175</td></tr>
+          <tr><td>Tratamento de fotos</td><td>Até 10 fotos</td><td>3 dias</td><td>€ 90</td><td>€ 90</td></tr>
+          <tr><td>Edição vídeo curto</td><td>1 reel ou teaser</td><td>3 dias</td><td>€ 100</td><td>€ 100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MAYKE YURI -->
+  <div class="section" id="mayke">
+    <div class="page-header">
+      <div>
+        <div class="page-title">MAYKE YURI</div>
+        <div class="page-subtitle">Artista 2 • Sertanejo • Plano Operacional de MKT</div>
+      </div>
+      <span class="badge badge-purple">Artista</span>
+    </div>
+
+    <div class="artist-header">
+      <div class="artist-avatar" style="background:rgba(155,109,255,.2);color:#9b6dff">MY</div>
+      <div class="artist-info">
+        <div class="name" style="color:#9b6dff">MAYKE YURI</div>
+        <div class="handle">Artista prioritário — com capacidade de pagamento</div>
+      </div>
+      <div class="artist-stats">
+        <div class="artist-stat">
+          <div class="v" style="color:#9b6dff">—</div>
+          <div class="l">Seguidores</div>
+        </div>
+        <div class="artist-stat">
+          <div class="v" style="color:#9b6dff">—</div>
+          <div class="l">Engajamento</div>
+        </div>
+        <div class="artist-stat">
+          <div class="v" style="color:#9b6dff">—</div>
+          <div class="l">Meta</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="urgency-banner" style="background:rgba(155,109,255,.1);border-color:rgba(155,109,255,.3)">
+      <div class="urgency-icon">📋</div>
+      <div>
+        <div class="urgency-title" style="color:#9b6dff">Briefing pendente</div>
+        <div class="urgency-text">Chay precisa preencher a ficha completa do Mayke. Sem briefing, assets e entrada confirmada → nenhum job entra na fila.</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="info-block">
+        <h3>Plano do Artista</h3>
+        <div class="info-row"><span class="ik">Posicionamento</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Objetivo MKT</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Público-alvo</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Prioridade do mês</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+        <div class="info-row"><span class="ik">Canais</span><span class="iv">Instagram / YouTube / TikTok</span></div>
+      </div>
+      <div class="info-block">
+        <h3>Checklist de Entrada</h3>
+        <div class="check-item" style="padding:10px 0;border-top:none">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Briefing preenchido</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Assets anexados</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Data de uso confirmada</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Preço aprovado</div>
+        </div>
+        <div class="check-item" style="padding:10px 0">
+          <div class="check-icon pending">✗</div>
+          <div class="check-label" style="font-size:12px">Entrada recebida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Serviços Disponíveis</div>
+    <div class="table-wrap">
+      <table class="price-table">
+        <thead><tr><th>Serviço</th><th>Escopo</th><th>Prazo</th><th>Preço (€)</th><th>Entrada (€)</th></tr></thead>
+        <tbody>
+          <tr><td>Pacote lançamento single</td><td>Capa + story + motion agenda + release</td><td>7 dias</td><td>€ 250</td><td>€ 175</td></tr>
+          <tr><td>Tratamento de fotos</td><td>Até 10 fotos</td><td>3 dias</td><td>€ 90</td><td>€ 90</td></tr>
+          <tr><td>Edição vídeo curto</td><td>1 reel ou teaser</td><td>3 dias</td><td>€ 100</td><td>€ 100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ARTISTA 3 -->
+  <div class="section" id="artista3">
+    <div class="page-header">
+      <div>
+        <div class="page-title">ARTISTA 3</div>
+        <div class="page-subtitle">A definir nome • Plano Operacional de MKT</div>
+      </div>
+      <span class="badge badge-green">Artista</span>
+    </div>
+    <div class="artist-header">
+      <div class="artist-avatar" style="background:rgba(61,224,138,.2);color:#3de08a">A3</div>
+      <div class="artist-info">
+        <div class="name" style="color:#3de08a">ARTISTA 3</div>
+        <div class="handle">Nome a definir • Modelo de ficha aguardando preenchimento</div>
+      </div>
+    </div>
+    <div class="info-block" style="margin-bottom:24px">
+      <h3>Ficha Aguardando Preenchimento</h3>
+      <div class="info-row"><span class="ik">Nome</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+      <div class="info-row"><span class="ik">Posicionamento</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+      <div class="info-row"><span class="ik">Objetivo MKT</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+      <div class="info-row"><span class="ik">Público-alvo</span><span class="iv" style="color:var(--muted)">A preencher</span></div>
+      <div class="info-row"><span class="ik">Canais</span><span class="iv">Instagram / YouTube / TikTok</span></div>
+    </div>
+  </div>
+
+  <!-- CHAY PRODUTOR -->
+  <div class="section" id="chay">
+    <div class="page-header">
+      <div>
+        <div class="page-title">CHAY PRODUTOR</div>
+        <div class="page-subtitle">Autoridade digital • Compositor • Produtor Musical</div>
+      </div>
+      <span class="badge badge-yellow">Marca Pessoal</span>
+    </div>
+
+    <div class="artist-header">
+      <div class="artist-avatar" style="background:rgba(232,184,75,.2);color:#e8b84b">CF</div>
+      <div class="artist-info">
+        <div class="name" style="color:#e8b84b">CHAY FRENTAS</div>
+        <div class="handle">Produtor musical • Compositor • Articulador do movimento sertanejo em Lisboa</div>
+      </div>
+    </div>
+
+    <div class="section-title">Estrutura do Portfólio Digital</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Seção</th><th>Objetivo</th><th>Conteúdo</th><th>Formato</th><th>Dono</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Home / Bio curta</strong></td>
+            <td>Explicar quem é o Chay</td>
+            <td>Frase de posicionamento + CTA</td>
+            <td>Página / Link-in-bio</td>
+            <td>Você</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Serviços</strong></td>
+            <td>Deixar claro o que ele vende</td>
+            <td>Produção, composição, gravação, mix/master</td>
+            <td>Página</td>
+            <td>Você</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Portfólio musical</strong></td>
+            <td>Mostrar resultados</td>
+            <td>Links de músicas, cases, antes/depois</td>
+            <td>Página</td>
+            <td>Chay</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Catálogo de composições</strong></td>
+            <td>Vender composições para terceiros</td>
+            <td>Lista por estilo/tema/clima com amostras</td>
+            <td>Drive / playlist privada</td>
+            <td>Chay</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Provas sociais</strong></td>
+            <td>Gerar confiança</td>
+            <td>Depoimentos, prints, créditos</td>
+            <td>Página</td>
+            <td>Você</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+          <tr>
+            <td><strong>Contato comercial</strong></td>
+            <td>Facilitar fechamento</td>
+            <td>WhatsApp, e-mail, formulário</td>
+            <td>Página</td>
+            <td>Você</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Setup Estratégico</div>
+    <div class="table-wrap">
+      <div class="table-title">Serviço de Setup Inicial</div>
+      <table class="price-table">
+        <thead><tr><th>Serviço</th><th>Escopo</th><th>Prazo</th><th>Preço (€)</th><th>Entrada (€)</th></tr></thead>
+        <tbody>
+          <tr><td>Setup estratégico / portal</td><td>Estrutura + gestão inicial completa</td><td>5 dias</td><td>€ 300</td><td>€ 210</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="section" id="timeline">
+    <div class="page-header">
+      <div>
+        <div class="page-title">LINHA DO TEMPO</div>
+        <div class="page-subtitle">Todas as tarefas com dono, prazo e status</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-title">Tarefas Urgentes e Alta Prioridade <span class="badge badge-red">4 urgentes</span></div>
+      <table>
+        <thead><tr><th>#</th><th>Frente</th><th>Tarefa</th><th>Entregável</th><th>Dono</th><th>Prazo</th><th>Status</th><th>Prioridade</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono">01</td>
+            <td>Evento</td>
+            <td>Coletar briefing completo do evento</td>
+            <td style="color:var(--muted);font-size:12px">Nome, lineup, horário, local, preço, logos</td>
+            <td>Chay</td>
+            <td class="mono">13/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-urgente">Urgente</span></td>
+          </tr>
+          <tr>
+            <td class="mono">02</td>
+            <td>Evento</td>
+            <td>Receber assets visuais</td>
+            <td style="color:var(--muted);font-size:12px">Fotos dos artistas, logos, referências</td>
+            <td>Chay</td>
+            <td class="mono">13/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-urgente">Urgente</span></td>
+          </tr>
+          <tr>
+            <td class="mono">03</td>
+            <td>Evento</td>
+            <td>Criar arte de lançamento</td>
+            <td style="color:var(--muted);font-size:12px">Feed 1080×1350 + story</td>
+            <td>Você</td>
+            <td class="mono">14/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-urgente">Urgente</span></td>
+          </tr>
+          <tr>
+            <td class="mono">12</td>
+            <td>Comercial</td>
+            <td>Definir tabela de preços</td>
+            <td style="color:var(--muted);font-size:12px">Pacotes, entrada, saldo, revisões, prazo</td>
+            <td>Você</td>
+            <td class="mono">14/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-urgente">Urgente</span></td>
+          </tr>
+          <tr>
+            <td class="mono">04</td>
+            <td>Evento</td>
+            <td>Aprovar arte de lançamento</td>
+            <td style="color:var(--muted);font-size:12px">Feedback único e objetivo</td>
+            <td>Chay</td>
+            <td class="mono">14/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">05</td>
+            <td>Evento</td>
+            <td>Produzir reel de lançamento</td>
+            <td style="color:var(--muted);font-size:12px">Vídeo curto com CTA e continuidade visual</td>
+            <td>Você</td>
+            <td class="mono">15/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">08</td>
+            <td>Sistema</td>
+            <td>Montar portal mestre</td>
+            <td style="color:var(--muted);font-size:12px">Base central de gestão no Sheets/Notion</td>
+            <td>Você</td>
+            <td class="mono">15/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">06</td>
+            <td>Evento</td>
+            <td>Definir campanha de mídia</td>
+            <td style="color:var(--muted);font-size:12px">Objetivo, orçamento, praça Lisboa, públicos</td>
+            <td>Você</td>
+            <td class="mono">16/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">09</td>
+            <td>Sistema</td>
+            <td>Preencher ficha Patrick Souza</td>
+            <td style="color:var(--muted);font-size:12px">Briefing, público, assets, agenda</td>
+            <td>Chay + artista</td>
+            <td class="mono">17/04</td>
+            <td><span class="status s-aguardando">Aguardando</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">10</td>
+            <td>Sistema</td>
+            <td>Preencher ficha Mayke Yuri</td>
+            <td style="color:var(--muted);font-size:12px">Briefing, público, assets, agenda</td>
+            <td>Chay + artista</td>
+            <td class="mono">17/04</td>
+            <td><span class="status s-aguardando">Aguardando</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+          <tr>
+            <td class="mono">07</td>
+            <td>Evento</td>
+            <td>Contratação de influenciadores</td>
+            <td style="color:var(--muted);font-size:12px">Lista, valores, entregas e datas</td>
+            <td>Chay</td>
+            <td class="mono">18/04</td>
+            <td><span class="status s-aberto">Aberto</span></td>
+            <td><span class="prio prio-media">Média</span></td>
+          </tr>
+          <tr>
+            <td class="mono">13</td>
+            <td>Marca</td>
+            <td>Estruturar portfólio digital do Chay</td>
+            <td style="color:var(--muted);font-size:12px">Bio, serviços, provas, composições, catálogo</td>
+            <td>Você</td>
+            <td class="mono">20/04</td>
+            <td><span class="status s-planejar">Planejar</span></td>
+            <td><span class="prio prio-alta">Alta</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WORKFLOW -->
+  <div class="section" id="workflow">
+    <div class="page-header">
+      <div>
+        <div class="page-title">FLUXO DE TRABALHO</div>
+        <div class="page-subtitle">SOP obrigatório para reduzir caos e retrabalho</div>
+      </div>
+    </div>
+
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">1</div>
+        <div class="wf-name">Captura</div>
+        <div class="wf-desc">Chay preenche o formulário — sem áudio solto</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">2</div>
+        <div class="wf-name">Triagem</div>
+        <div class="wf-desc">Você valida objetivo, data, assets e orçamento</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">3</div>
+        <div class="wf-name">Comercial</div>
+        <div class="wf-desc">Preço, entrada e escopo confirmados por escrito</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">4</div>
+        <div class="wf-name">Produção</div>
+        <div class="wf-desc">Tarefa entra na timeline com dono e prazo</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">5</div>
+        <div class="wf-name">Aprovação</div>
+        <div class="wf-desc">Feedback centralizado e objetivo (máx. 2 rounds)</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">6</div>
+        <div class="wf-name">Publicação</div>
+        <div class="wf-desc">Entrega com orientação de uso e postagem</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">7</div>
+        <div class="wf-name">Arquivo</div>
+        <div class="wf-desc">Salvo no portfólio e histórico do projeto</div>
+      </div>
+    </div>
+
+    <div class="section-title">Regras Comerciais</div>
+    <div class="info-block" style="margin-bottom:24px">
+      <div class="check-item" style="padding:14px 0;border-top:none">
+        <div class="check-icon done">✓</div>
+        <div class="check-label">Entrada mínima de <strong>70%</strong> para jobs sob encomenda e <strong>100%</strong> para entregas rápidas/pequenas.</div>
+      </div>
+      <div class="check-item" style="padding:14px 0">
+        <div class="check-icon done">✓</div>
+        <div class="check-label">Máximo de <strong>2 rodadas de ajuste</strong> por peça. Ajustes extras são cobrados à parte.</div>
+      </div>
+      <div class="check-item" style="padding:14px 0">
+        <div class="check-icon done">✓</div>
+        <div class="check-label">Pedidos urgentes ou fora do fluxo têm <strong>acréscimo de preço</strong>.</div>
+      </div>
+      <div class="check-item" style="padding:14px 0">
+        <div class="check-icon done">✓</div>
+        <div class="check-label">Sem briefing e assets completos, <strong>prazo não começa a contar</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRECIFICAÇÃO -->
+  <div class="section" id="precificacao">
+    <div class="page-header">
+      <div>
+        <div class="page-title">PRECIFICAÇÃO</div>
+        <div class="page-subtitle">Tabela-base de serviços e cobrança • Em euros</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:32px">
+      <div class="table-title">Tabela de Serviços</div>
+      <table class="price-table">
+        <thead><tr>
+          <th>Projeto</th><th>Serviço</th><th>Escopo</th><th>Prazo</th><th>Preço Base</th><th>Entrada %</th><th>Valor Entrada</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-red" style="font-size:10px">Evento</span></td>
+            <td>Arte principal lançamento</td>
+            <td>1 feed + 1 story</td>
+            <td>48h</td>
+            <td>€ 120</td>
+            <td>70%</td>
+            <td style="color:var(--green)">€ 84</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red" style="font-size:10px">Evento</span></td>
+            <td>Reel de lançamento</td>
+            <td>1 vídeo vertical curto</td>
+            <td>72h</td>
+            <td>€ 150</td>
+            <td>70%</td>
+            <td style="color:var(--green)">€ 105</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red" style="font-size:10px">Evento</span></td>
+            <td>Pacote countdown</td>
+            <td>6 peças de contagem regressiva</td>
+            <td>7 dias</td>
+            <td>€ 180</td>
+            <td>70%</td>
+            <td style="color:var(--green)">€ 126</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue" style="font-size:10px">Artista</span></td>
+            <td>Pacote lançamento single</td>
+            <td>Capa + story + motion + release</td>
+            <td>7 dias</td>
+            <td>€ 250</td>
+            <td>70%</td>
+            <td style="color:var(--green)">€ 175</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue" style="font-size:10px">Artista</span></td>
+            <td>Tratamento de fotos</td>
+            <td>Até 10 fotos</td>
+            <td>3 dias</td>
+            <td>€ 90</td>
+            <td>100%</td>
+            <td style="color:var(--green)">€ 90</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue" style="font-size:10px">Artista</span></td>
+            <td>Edição vídeo curto</td>
+            <td>1 reel ou teaser</td>
+            <td>3 dias</td>
+            <td>€ 100</td>
+            <td>100%</td>
+            <td style="color:var(--green)">€ 100</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-yellow" style="font-size:10px">Produtor</span></td>
+            <td>Setup estratégico / portal</td>
+            <td>Estrutura + gestão inicial</td>
+            <td>5 dias</td>
+            <td>€ 300</td>
+            <td>70%</td>
+            <td style="color:var(--green)">€ 210</td>
+            <td><span class="status s-planejar">Proposta</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="info-block">
+        <h3>Total Proposto</h3>
+        <div class="info-row"><span class="ik">Evento 22/05 (3 pacotes)</span><span class="iv" style="color:var(--accent)">€ 450</span></div>
+        <div class="info-row"><span class="ik">Artistas (estimado 2 artistas)</span><span class="iv" style="color:var(--accent)">€ 440</span></div>
+        <div class="info-row"><span class="ik">Setup Chay Produtor</span><span class="iv" style="color:var(--accent)">€ 300</span></div>
+        <div class="info-row" style="border-top:1px solid var(--accent);padding-top:10px"><span class="ik" style="font-weight:700">Total geral</span><span class="iv" style="color:var(--green);font-size:18px;font-weight:700">€ 1.190</span></div>
+      </div>
+      <div class="info-block">
+        <h3>Entradas Previstas</h3>
+        <div class="info-row"><span class="ik">Evento (70%)</span><span class="iv" style="color:var(--green)">€ 315</span></div>
+        <div class="info-row"><span class="ik">Artistas (estimado)</span><span class="iv" style="color:var(--green)">€ 350</span></div>
+        <div class="info-row"><span class="ik">Setup (70%)</span><span class="iv" style="color:var(--green)">€ 210</span></div>
+        <div class="info-row" style="border-top:1px solid var(--green);padding-top:10px"><span class="ik" style="font-weight:700">Caixa imediato previsto</span><span class="iv" style="color:var(--green);font-size:18px;font-weight:700">€ 875</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRIEFING -->
+  <div class="section" id="briefing">
+    <div class="page-header">
+      <div>
+        <div class="page-title">FICHA DE PEDIDO</div>
+        <div class="page-subtitle">Formulário obrigatório para qualquer job entrar na fila de produção</div>
+      </div>
+    </div>
+
+    <div class="urgency-banner" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.3)">
+      <div class="urgency-icon">📌</div>
+      <div>
+        <div class="urgency-title" style="color:var(--accent)">Regra inegociável</div>
+        <div class="urgency-text">Sem esta ficha preenchida + assets + entrada confirmada → job <strong style="color:var(--text)">não entra na fila</strong> e prazo não começa a contar.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-title">Campos Obrigatórios</div>
+      <table>
+        <thead><tr><th>Campo</th><th>O que preencher</th><th>Exemplo / Opções</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Projeto / Artista</strong></td><td>Qual projeto ou artista é este pedido</td><td>Evento 22/05 / Patrick Souza / Mayke Yuri</td></tr>
+          <tr><td><strong>Objetivo da ação</strong></td><td>O que queremos alcançar com esta peça</td><td>Anunciar o evento, vender bilhetes, lançar single</td></tr>
+          <tr><td><strong>O que precisa ser entregue</strong></td><td>Descreva a peça necessária</td><td>Arte feed + story / Reel / Flyer / Bilhete</td></tr>
+          <tr><td><strong>Data de publicação / uso</strong></td><td>Quando será usada (data real)</td><td>14/04/2026</td></tr>
+          <tr><td><strong>Prazo interno para produção</strong></td><td>Quando você precisa receber para produzir</td><td>13/04 com todos os assets</td></tr>
+          <tr><td><strong>Quem aprova</strong></td><td>Nome de quem dá o OK final</td><td>Chay / Patrick / Mayke</td></tr>
+          <tr><td><strong>Formato necessário</strong></td><td>Especificação técnica da peça</td><td>Feed 1080×1350 / Story / Reel / Flyer / Motion</td></tr>
+          <tr><td><strong>Textos obrigatórios</strong></td><td>Copys, chamadas, hashtags, CTAs</td><td>"Reserve já o seu lugar — 22/05 Lisboa"</td></tr>
+          <tr><td><strong>Referências visuais</strong></td><td>Links, prints ou referências de estilo</td><td>Link do Pinterest ou prints no Drive</td></tr>
+          <tr><td><strong>Assets anexados</strong></td><td>Fotos, logos, fontes, vídeos, músicas</td><td>Pasta compartilhada no Google Drive</td></tr>
+          <tr><td><strong>Orçamento aprovado (€)</strong></td><td>Valor confirmado para este job</td><td>€ 120</td></tr>
+          <tr><td><strong>Entrada recebida?</strong></td><td>Confirmação do pagamento da entrada</td><td>Sim / Não — se Não, job não entra</td></tr>
+          <tr><td><strong>Observações</strong></td><td>Qualquer detalhe extra relevante</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Enviar Briefing</div>
+    <div class="info-block">
+      <form id="briefingForm" class="form-grid">
+        <div class="field"><label>Projeto / Artista</label><input name="project" required placeholder="Evento 22/05"></div>
+        <div class="field"><label>Objetivo</label><input name="objective" required placeholder="Anunciar evento"></div>
+        <div class="field"><label>Entregável</label><input name="deliverable" required placeholder="Feed + story"></div>
+        <div class="field"><label>Data de uso</label><input name="usageDate" type="date" required></div>
+        <div class="field"><label>Aprovador</label><input name="approver" placeholder="Chay"></div>
+        <div class="field"><label>Orçamento (€)</label><input name="budget" type="number" min="0" step="1" placeholder="120"></div>
+        <div class="field full"><label>Observações</label><textarea name="notes" rows="4" placeholder="Detalhes extras"></textarea></div>
+        <div class="full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn-primary" type="submit">Enviar para planilha</button>
+          <span id="briefingMsg" class="hint"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- INTEGRAÇÕES -->
+  <div class="section" id="integracoes">
+    <div class="page-header">
+      <div>
+        <div class="page-title">INTEGRAÇÕES</div>
+        <div class="page-subtitle">Ferramentas para centralizar toda a operação</div>
+      </div>
+    </div>
+
+    <div class="section-title">Ferramentas Sugeridas</div>
+    <div class="integration-row">
+      <button class="int-card" id="openDriveRootBtn" type="button">
+        <div class="int-icon">📁</div>
+        <div class="int-name">Google Drive</div>
+        <div class="int-desc">Pasta central por artista/projeto. Chay faz upload de fotos, logos e músicas. Você entrega as artes pela mesma pasta.</div>
+      </button>
+      <button class="int-card" id="openCalendarBtn" type="button">
+        <div class="int-icon">📅</div>
+        <div class="int-name">Google Agenda</div>
+        <div class="int-desc">Calendário compartilhado com todas as datas de entrega, publicação e reuniões. Ninguém perde prazo.</div>
+      </button>
+      <a class="int-card" href="https://docs.google.com/spreadsheets" target="_blank">
+        <div class="int-icon">📊</div>
+        <div class="int-name">Google Sheets</div>
+        <div class="int-desc">Portal mestre de controle: tarefas, status, briefings e financeiro em um só lugar. Chay preenche, você controla.</div>
+      </a>
+      <a class="int-card" href="https://www.notion.so" target="_blank">
+        <div class="int-icon">📝</div>
+        <div class="int-name">Notion (alternativa)</div>
+        <div class="int-desc">Portal mais visual. Boa opção para o Chay preencher fichas e acompanhar o status dos projetos com mais facilidade.</div>
+      </a>
+      <a class="int-card" href="https://wa.me" target="_blank">
+        <div class="int-icon">💬</div>
+        <div class="int-name">WhatsApp Business</div>
+        <div class="int-desc">Comunicação direta. Mas com regra: pedidos via portal/ficha primeiro, WhatsApp só para dúvidas rápidas.</div>
+      </a>
+      <a class="int-card" href="https://www.instagram.com/4cadeirasoficial/" target="_blank">
+        <div class="int-icon">📸</div>
+        <div class="int-name">@4cadeirasoficial</div>
+        <div class="int-desc">Instagram do evento. Todas as artes e reels do evento serão publicados aqui. Monitorar engajamento e crescimento.</div>
+      </a>
+    </div>
+
+    <div class="section-title">Estrutura de Pastas no Google Drive</div>
+    <div class="info-block">
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text);line-height:2">
+        📁 <span style="color:var(--accent)">CHAY FRENTAS — OPERAÇÃO MKT</span><br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:#5b8af5">EVENTO 22/05</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Assets (fotos, logos)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Artes entregues<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Reels e vídeos<br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:#5b8af5">PATRICK SOUZA</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Assets<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Entregas<br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:#9b6dff">MAYKE YURI</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Assets<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Entregas<br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:#3de08a">ARTISTA 3</span><br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:var(--accent)">CHAY PRODUTOR</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Portfólio<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📁 Catálogo de composições<br>
+        &nbsp;&nbsp;&nbsp;📁 <span style="color:var(--muted)">_TEMPLATES</span>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:24px">
+      <div class="info-block">
+        <h3>📅 Google Agenda (ao vivo)</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn-primary" id="loadCalendarBtn" type="button">Carregar eventos</button>
+          <span id="calendarMsg" class="hint"></span>
+        </div>
+        <div id="calendarList" class="api-list"></div>
+      </div>
+      <div class="info-block">
+        <h3>📁 Google Drive (ao vivo)</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn-primary" id="loadDriveBtn" type="button">Carregar arquivos</button>
+          <span id="driveMsg" class="hint"></span>
+        </div>
+        <div id="driveList" class="api-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="configuracoes">
+    <div class="page-header">
+      <div>
+        <div class="page-title">CONFIGURAÇÕES</div>
+        <div class="page-subtitle">IDs de pastas do Drive e integrações locais</div>
+      </div>
+    </div>
+
+    <div class="info-block">
+      <form id="cfgForm" class="form-grid">
+        <div class="field"><label>Pasta Evento (Drive ID)</label><input id="cfgDriveEvento" placeholder="ID da pasta do evento"></div>
+        <div class="field"><label>Pasta Patrick (Drive ID)</label><input id="cfgDrivePatrick" placeholder="ID da pasta do Patrick"></div>
+        <div class="field"><label>Pasta Mayke (Drive ID)</label><input id="cfgDriveMayke" placeholder="ID da pasta do Mayke"></div>
+        <div class="field"><label>Pasta Chay (Drive ID)</label><input id="cfgDriveChay" placeholder="ID da pasta do Chay"></div>
+        <div class="field full"><label>Google Calendar ID</label><input id="cfgCalendarId" placeholder="ID da agenda do projeto"></div>
+        <div class="full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn-primary" type="submit">Salvar configurações</button>
+          <span id="cfgMsg" class="hint">Esses dados ficam salvos no navegador.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.querySelector('.main').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+// Countdown to event
+function updateCountdown() {
+  const event = new Date('2026-05-22');
+  const now = new Date();
+  const diff = Math.ceil((event - now) / (1000*60*60*24));
+  document.querySelectorAll('.badge-red').forEach(b => {
+    if (b.textContent.includes('dias')) b.textContent = '🔥 ' + diff + ' dias';
+  });
+}
+updateCountdown();
+
+const cfgKey = 'chay-portal-config-v1';
+
+function loadCfg() {
+  try { return JSON.parse(localStorage.getItem(cfgKey) || '{}'); }
+  catch { return {}; }
+}
+
+function saveCfg(cfg) {
+  localStorage.setItem(cfgKey, JSON.stringify(cfg));
+}
+
+function hydrateCfgForm() {
+  const cfg = loadCfg();
+  const map = {
+    cfgDriveEvento: 'driveEvento',
+    cfgDrivePatrick: 'drivePatrick',
+    cfgDriveMayke: 'driveMayke',
+    cfgDriveChay: 'driveChay',
+    cfgCalendarId: 'calendarId',
+  };
+  Object.entries(map).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = cfg[key] || '';
+  });
+}
+
+document.getElementById('cfgForm')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const cfg = {
+    driveEvento: document.getElementById('cfgDriveEvento')?.value.trim() || '',
+    drivePatrick: document.getElementById('cfgDrivePatrick')?.value.trim() || '',
+    driveMayke: document.getElementById('cfgDriveMayke')?.value.trim() || '',
+    driveChay: document.getElementById('cfgDriveChay')?.value.trim() || '',
+    calendarId: document.getElementById('cfgCalendarId')?.value.trim() || '',
+  };
+  saveCfg(cfg);
+  document.getElementById('cfgMsg').textContent = 'Configurações salvas com sucesso.';
+});
+
+document.getElementById('openDriveRootBtn')?.addEventListener('click', () => {
+  const cfg = loadCfg();
+  const folderId = cfg.driveEvento || cfg.driveChay || '';
+  if (!folderId) {
+    alert('Defina um Drive ID na aba Configuracoes para abrir a pasta correta.');
+    return;
+  }
+  window.open(`https://drive.google.com/drive/folders/${encodeURIComponent(folderId)}`, '_blank', 'noopener');
+});
+
+document.getElementById('openCalendarBtn')?.addEventListener('click', () => {
+  const cfg = loadCfg();
+  const calendarId = cfg.calendarId || '';
+  if (!calendarId) {
+    alert('Defina o Google Calendar ID na aba Configuracoes para abrir a agenda correta.');
+    return;
+  }
+  window.open(`https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarId)}`, '_blank', 'noopener');
+});
+
+document.getElementById('briefingForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('briefingMsg');
+  msg.textContent = 'Enviando...';
+  const form = e.currentTarget;
+  const payload = Object.fromEntries(new FormData(form).entries());
+  try {
+    const res = await fetch('/api/briefing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Falha no envio');
+    form.reset();
+    msg.textContent = 'Briefing enviado para a planilha.';
+  } catch (err) {
+    msg.textContent = 'Erro: ' + (err.message || 'nao foi possivel enviar');
+  }
+});
+
+document.getElementById('loadCalendarBtn')?.addEventListener('click', async () => {
+  const msg = document.getElementById('calendarMsg');
+  const list = document.getElementById('calendarList');
+  msg.textContent = 'Carregando...';
+  list.innerHTML = '';
+  try {
+    const res = await fetch('/api/calendar?max=8');
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Falha ao carregar agenda');
+    (data.events || []).forEach(ev => {
+      const el = document.createElement('div');
+      el.className = 'api-item';
+      el.textContent = `${ev.when || '--'} - ${ev.title || 'Sem titulo'}`;
+      list.appendChild(el);
+    });
+    msg.textContent = `${(data.events || []).length} evento(s) carregado(s).`;
+  } catch (err) {
+    msg.textContent = 'Erro: ' + (err.message || 'nao foi possivel carregar');
+  }
+});
+
+document.getElementById('loadDriveBtn')?.addEventListener('click', async () => {
+  const cfg = loadCfg();
+  const folderId = cfg.driveEvento || cfg.driveChay;
+  const msg = document.getElementById('driveMsg');
+  const list = document.getElementById('driveList');
+  list.innerHTML = '';
+  if (!folderId) {
+    msg.textContent = 'Defina um ID de pasta na aba Configurações.';
+    return;
+  }
+  msg.textContent = 'Carregando...';
+  try {
+    const res = await fetch('/api/drive?folderId=' + encodeURIComponent(folderId));
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Falha ao carregar Drive');
+    (data.files || []).forEach(file => {
+      const el = document.createElement('a');
+      el.className = 'api-item';
+      el.href = file.webViewLink || '#';
+      el.target = '_blank';
+      el.rel = 'noopener';
+      el.textContent = `${file.name || 'Arquivo'} (${file.mimeType || 'tipo'})`;
+      list.appendChild(el);
+    });
+    msg.textContent = `${(data.files || []).length} arquivo(s) carregado(s).`;
+  } catch (err) {
+    msg.textContent = 'Erro: ' + (err.message || 'nao foi possivel carregar');
+  }
+});
+
+hydrateCfgForm();
+</script>
+</body>
+</html>

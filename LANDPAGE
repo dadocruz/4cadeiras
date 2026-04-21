@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Landing page para cantores e artistas com pacotes de lançamento musical e tráfego pago." />
+	<title>NovaCena | Pacotes de Lançamento para Artistas</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--bg: #050609;
+			--bg-soft: #0c1018;
+			--card: rgba(12, 17, 28, 0.78);
+			--line: rgba(170, 188, 225, 0.16);
+			--text: #f4f7ff;
+			--muted: #9aa4b9;
+			--green: #47d16d;
+			--blue: #63a6ff;
+			--red: #ff5f66;
+			--gold: #f8b64c;
+			--headline: #f8fbff;
+			--shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+			--container: 1080px;
+			--radius: 20px;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: "Outfit", sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at 12% 8%, rgba(71, 209, 109, 0.16) 0%, transparent 35%),
+				radial-gradient(circle at 84% 10%, rgba(99, 166, 255, 0.2) 0%, transparent 38%),
+				radial-gradient(circle at 50% 100%, rgba(248, 182, 76, 0.12) 0%, transparent 40%),
+				linear-gradient(180deg, #030407 0%, #06080e 50%, #05070c 100%);
+			min-height: 100vh;
+			line-height: 1.4;
+			overflow-x: hidden;
+		}
+
+		body::before,
+		body::after {
+			content: "";
+			position: fixed;
+			pointer-events: none;
+			inset: auto;
+			z-index: 0;
+			filter: blur(70px);
+			opacity: 0.55;
+		}
+
+		body::before {
+			width: 360px;
+			height: 360px;
+			background: #2d6eff;
+			top: -80px;
+			right: -90px;
+		}
+
+		body::after {
+			width: 300px;
+			height: 300px;
+			background: #22be5f;
+			bottom: -60px;
+			left: -70px;
+		}
+
+		.page {
+			position: relative;
+			z-index: 1;
+			width: min(100% - 1.5rem, var(--container));
+			margin-inline: auto;
+			padding: 2rem 0 5.2rem;
+		}
+
+		.hero {
+			text-align: center;
+			padding: 1.3rem 0 0.8rem;
+			animation: rise 700ms ease both;
+		}
+
+		.logo {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin-bottom: 0.9rem;
+			font-weight: 600;
+			font-size: 0.88rem;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: #ccd5e7;
+		}
+
+		.brand-mark {
+			width: 58px;
+			height: 74px;
+			display: block;
+			filter: drop-shadow(0 10px 16px rgba(103, 106, 246, 0.25));
+		}
+
+		.logo span {
+			text-align: left;
+			line-height: 1.1;
+		}
+
+		.logo strong {
+			display: block;
+			font-size: 1rem;
+			letter-spacing: 0.06em;
+			color: #edf2ff;
+		}
+
+		.hero h1 {
+			font-family: "Bebas Neue", sans-serif;
+			font-size: clamp(2.5rem, 10vw, 5.6rem);
+			letter-spacing: 0.02em;
+			line-height: 0.95;
+			color: var(--headline);
+			text-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+		}
+
+		.hero h1 span {
+			color: #ff4f4f;
+		}
+
+		.hero p {
+			max-width: 700px;
+			margin: 0.45rem auto 0;
+			color: #b4bdd0;
+			font-size: clamp(0.98rem, 3vw, 1.2rem);
+		}
+
+		.quick-points {
+			margin-top: 1.2rem;
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 0.6rem;
+		}
+
+		.quick-points span {
+			border: 1px solid rgba(130, 157, 204, 0.34);
+			border-radius: 999px;
+			padding: 0.42rem 0.76rem;
+			color: #d7dff0;
+			background: rgba(9, 14, 24, 0.65);
+			font-size: 0.84rem;
+			backdrop-filter: blur(10px);
+		}
+
+		.package-grid {
+			margin-top: 1.8rem;
+			display: grid;
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+			gap: 1rem;
+		}
+
+		.package {
+			grid-column: span 12;
+			position: relative;
+			background: var(--card);
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			padding: 1.2rem;
+			backdrop-filter: blur(10px);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+			animation: rise 650ms ease both;
+		}
+
+		.package:nth-child(2) {
+			animation-delay: 120ms;
+		}
+
+		.package:nth-child(3) {
+			animation-delay: 220ms;
+		}
+
+		.package::after {
+			content: "";
+			position: absolute;
+			inset: -80% auto auto -50%;
+			width: 200px;
+			height: 200px;
+			border-radius: 50%;
+			filter: blur(26px);
+			opacity: 0.32;
+			pointer-events: none;
+		}
+
+		.package.start::after {
+			background: #37d462;
+		}
+
+		.package.tracao::after {
+			background: #4e87ff;
+		}
+
+		.package.explosao::after {
+			background: #ff5f66;
+		}
+
+		.package-top {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 0.7rem;
+			margin-bottom: 0.95rem;
+		}
+
+		.tag {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.42rem;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			font-size: 0.75rem;
+			font-weight: 700;
+			padding: 0.4rem 0.76rem;
+			border-radius: 999px;
+			border: 1px solid;
+		}
+
+		.tag.start {
+			color: #79f39a;
+			border-color: #235438;
+			background: #081b12;
+		}
+
+		.tag.tracao {
+			color: #87b8ff;
+			border-color: #243f73;
+			background: #0a1324;
+		}
+
+		.tag.explosao {
+			color: #ff8e95;
+			border-color: #6a2a31;
+			background: #210d10;
+		}
+
+		.price {
+			font-family: "Bebas Neue", sans-serif;
+			font-size: clamp(2.3rem, 7vw, 3.8rem);
+			letter-spacing: 0.02em;
+			line-height: 0.9;
+			color: #fefefe;
+		}
+
+		.views {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 0.65rem;
+			margin-bottom: 0.74rem;
+			justify-content: space-between;
+		}
+
+		.views-main {
+			display: flex;
+			align-items: baseline;
+			gap: 0.45rem;
+		}
+
+		.views strong {
+			font-family: "Bebas Neue", sans-serif;
+			font-size: clamp(3rem, 11vw, 5.2rem);
+			letter-spacing: 0.015em;
+			line-height: 0.82;
+		}
+
+		.views-label {
+			font-size: 1rem;
+			color: #d0d9eb;
+			font-weight: 500;
+			text-transform: lowercase;
+		}
+
+		.yt {
+			border-radius: 999px;
+			border: 1px solid #6a2228;
+			background: #250d11;
+			color: #ff6d75;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			font-weight: 600;
+			font-size: 0.9rem;
+			padding: 0.34rem 0.72rem;
+		}
+
+		.yt svg {
+			width: 16px;
+			height: 11px;
+			display: block;
+		}
+
+		.features {
+			list-style: none;
+			display: grid;
+			gap: 0.38rem;
+			color: #c1c9da;
+			margin-bottom: 0.78rem;
+		}
+
+		.features li::before {
+			content: "\2022";
+			margin-right: 0.44rem;
+			font-size: 1.1rem;
+			vertical-align: middle;
+		}
+
+		.features.start li::before {
+			color: var(--green);
+		}
+
+		.features.tracao li::before {
+			color: var(--blue);
+		}
+
+		.features.explosao li::before {
+			color: var(--red);
+		}
+
+		.bonus {
+			border: 1px solid #1e5a30;
+			border-radius: 11px;
+			background: #0a2413;
+			color: #88f6a5;
+			padding: 0.52rem 0.76rem;
+			font-weight: 500;
+			font-size: 0.92rem;
+		}
+
+		.package-footer {
+			margin-top: 0.65rem;
+			display: flex;
+			justify-content: space-between;
+			gap: 0.6rem;
+			color: #748097;
+			font-size: 0.85rem;
+			flex-wrap: wrap;
+		}
+
+		.warning {
+			color: #ff7f86;
+			font-weight: 700;
+		}
+
+		.checklist {
+			margin-top: 1.3rem;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: rgba(9, 13, 22, 0.76);
+			backdrop-filter: blur(10px);
+			padding: 1.1rem;
+			box-shadow: var(--shadow);
+			animation: rise 700ms ease both;
+			animation-delay: 280ms;
+		}
+
+		.checklist h2 {
+			text-align: center;
+			font-size: 1rem;
+			color: #8f9bb3;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			margin-bottom: 0.78rem;
+		}
+
+		.items {
+			display: grid;
+			gap: 0.58rem;
+		}
+
+		.item {
+			border: 1px solid rgba(148, 167, 204, 0.2);
+			border-radius: 12px;
+			background: rgba(7, 11, 18, 0.74);
+			padding: 0.8rem 0.9rem;
+		}
+
+		.item strong {
+			display: block;
+			font-size: 1.1rem;
+			letter-spacing: -0.01em;
+			margin-bottom: 0.1rem;
+		}
+
+		.item span {
+			color: var(--muted);
+			font-size: 0.92rem;
+		}
+
+		.item.red strong::before,
+		.item.green strong::before,
+		.item.blue strong::before,
+		.item.gold strong::before,
+		.item.violet strong::before {
+			content: "";
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			display: inline-block;
+			margin-right: 0.5rem;
+			vertical-align: middle;
+		}
+
+		.item.red strong::before {
+			background: var(--red);
+		}
+
+		.item.green strong::before {
+			background: var(--green);
+		}
+
+		.item.blue strong::before {
+			background: var(--blue);
+		}
+
+		.item.gold strong::before {
+			background: var(--gold);
+		}
+
+		.item.violet strong::before {
+			background: #ae7aff;
+		}
+
+		.cta {
+			margin-top: 1.3rem;
+			text-align: center;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: linear-gradient(180deg, rgba(12, 18, 30, 0.9), rgba(7, 10, 16, 0.9));
+			box-shadow: var(--shadow);
+			padding: 1.2rem;
+		}
+
+		.cta p {
+			color: #b2bcd0;
+			margin-bottom: 0.76rem;
+			font-size: 0.96rem;
+		}
+
+		.cta a {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+			text-decoration: none;
+			color: #fff;
+			font-weight: 700;
+			padding: 0.9rem 1.3rem;
+			border-radius: 999px;
+			background: linear-gradient(135deg, #2fd16b, #11b95a);
+			box-shadow: 0 14px 35px rgba(26, 191, 95, 0.4);
+			transition: transform 180ms ease, box-shadow 180ms ease;
+		}
+
+		.cta a:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 18px 40px rgba(26, 191, 95, 0.5);
+		}
+
+		.channels {
+			margin-top: 0.85rem;
+			color: #6e7b92;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			font-size: 0.72rem;
+		}
+
+		.sticky-whats {
+			position: fixed;
+			right: 1rem;
+			bottom: 1rem;
+			z-index: 9;
+		}
+
+		.sticky-whats a {
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.44rem;
+			border-radius: 999px;
+			padding: 0.78rem 0.95rem;
+			border: 1px solid rgba(53, 216, 117, 0.55);
+			background: rgba(13, 39, 22, 0.9);
+			color: #baf8cc;
+			font-size: 0.84rem;
+			backdrop-filter: blur(8px);
+			box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+		}
+
+		.sticky-whats svg {
+			width: 18px;
+			height: 18px;
+			display: block;
+		}
+
+		@keyframes rise {
+			from {
+				opacity: 0;
+				transform: translateY(18px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@media (min-width: 900px) {
+			.package {
+				grid-column: span 4;
+			}
+		}
+
+		@media (max-width: 720px) {
+			.page {
+				width: min(100% - 1rem, var(--container));
+			}
+
+			.hero h1 {
+				line-height: 0.9;
+			}
+
+			.package {
+				padding: 1rem;
+			}
+
+			.price {
+				font-size: 2.8rem;
+			}
+
+			.sticky-whats {
+				right: 0.65rem;
+				bottom: 0.65rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="page">
+		<header class="hero">
+			<div class="logo">
+				<svg class="brand-mark" viewBox="0 0 60 80" aria-hidden="true">
+					<polygon points="14,0 56,0 44,80 2,80" fill="#6671e8"></polygon>
+					<text x="31" y="64" fill="#ffffff" font-size="17" font-family="Outfit, sans-serif" font-weight="800" text-anchor="middle" transform="rotate(-73, 31, 64)">ESTÚDIO</text>
+				</svg>
+				<span>
+					NovaCena
+					<strong>Lançamentos Musicais</strong>
+				</span>
+			</div>
+			<h1>Pacotes de <span>lançamento</span></h1>
+			<p>Visualizações reais, direção criativa e campanhas estratégicas para artistas que querem transformar música em público fiel.</p>
+			<div class="quick-points">
+				<span>YouTube Ads</span>
+				<span>Google Ads</span>
+				<span>Meta Ads</span>
+				<span>Foco em artistas</span>
+			</div>
+		</header>
+
+		<section class="package-grid" aria-label="Pacotes de lançamento">
+			<article class="package start">
+				<div class="package-top">
+					<span class="tag start">START</span>
+					<div class="price">R$ 550</div>
+				</div>
+				<div class="views">
+					<div class="views-main">
+						<strong>10.000</strong>
+						<span class="views-label">visualizações</span>
+					</div>
+					<span class="yt"><svg viewBox="0 0 24 16" aria-hidden="true"><path fill="#ff2f3d" d="M23.5 2.5a3.1 3.1 0 0 0-2.2-2.2C19.4 0 12 0 12 0S4.6 0 2.7.3A3.1 3.1 0 0 0 .5 2.5 32.9 32.9 0 0 0 0 8a32.9 32.9 0 0 0 .5 5.5 3.1 3.1 0 0 0 2.2 2.2C4.6 16 12 16 12 16s7.4 0 9.3-.3a3.1 3.1 0 0 0 2.2-2.2A32.9 32.9 0 0 0 24 8a32.9 32.9 0 0 0-.5-5.5Z"></path><path fill="#ffffff" d="m9.7 11.3 6.2-3.3-6.2-3.3v6.6Z"></path></svg>YouTube</span>
+				</div>
+				<ul class="features start">
+					<li>Motion pré-save + lançamento + pós-lançamento</li>
+					<li>Campanha YouTube segmentada</li>
+				</ul>
+				<div class="bonus">Bônus: Spotify Canvas incluso</div>
+				<div class="package-footer">
+					<span>À vista ou parcelado no cartão</span>
+				</div>
+			</article>
+
+			<article class="package tracao">
+				<div class="package-top">
+					<span class="tag tracao">TRACAO</span>
+					<div class="price">R$ 1.100</div>
+				</div>
+				<div class="views">
+					<div class="views-main">
+						<strong>50.000</strong>
+						<span class="views-label">visualizações</span>
+					</div>
+					<span class="yt"><svg viewBox="0 0 24 16" aria-hidden="true"><path fill="#ff2f3d" d="M23.5 2.5a3.1 3.1 0 0 0-2.2-2.2C19.4 0 12 0 12 0S4.6 0 2.7.3A3.1 3.1 0 0 0 .5 2.5 32.9 32.9 0 0 0 0 8a32.9 32.9 0 0 0 .5 5.5 3.1 3.1 0 0 0 2.2 2.2C4.6 16 12 16 12 16s7.4 0 9.3-.3a3.1 3.1 0 0 0 2.2-2.2A32.9 32.9 0 0 0 24 8a32.9 32.9 0 0 0-.5-5.5Z"></path><path fill="#ffffff" d="m9.7 11.3 6.2-3.3-6.2-3.3v6.6Z"></path></svg>YouTube</span>
+				</div>
+				<ul class="features tracao">
+					<li>Kit completo de motions (3 vídeos)</li>
+					<li>Campanha segmentada por estilo musical</li>
+				</ul>
+				<div class="bonus">Bônus: Spotify Canvas incluso</div>
+				<div class="package-footer">
+					<span>À vista ou parcelado no cartão</span>
+				</div>
+			</article>
+
+			<article class="package explosao">
+				<div class="package-top">
+					<span class="tag explosao">EXPLOSAO</span>
+					<div class="price">R$ 1.800</div>
+				</div>
+				<div class="views">
+					<div class="views-main">
+						<strong>100.000</strong>
+						<span class="views-label">visualizações</span>
+					</div>
+					<span class="yt"><svg viewBox="0 0 24 16" aria-hidden="true"><path fill="#ff2f3d" d="M23.5 2.5a3.1 3.1 0 0 0-2.2-2.2C19.4 0 12 0 12 0S4.6 0 2.7.3A3.1 3.1 0 0 0 .5 2.5 32.9 32.9 0 0 0 0 8a32.9 32.9 0 0 0 .5 5.5 3.1 3.1 0 0 0 2.2 2.2C4.6 16 12 16 12 16s7.4 0 9.3-.3a3.1 3.1 0 0 0 2.2-2.2A32.9 32.9 0 0 0 24 8a32.9 32.9 0 0 0-.5-5.5Z"></path><path fill="#ffffff" d="m9.7 11.3 6.2-3.3-6.2-3.3v6.6Z"></path></svg>YouTube</span>
+				</div>
+				<ul class="features explosao">
+					<li>Kit completo de motions (3 vídeos)</li>
+					<li>YouTube Ads + Meta Ads combinados</li>
+					<li>Parcelamento em até 12x</li>
+				</ul>
+				<div class="bonus">Bônus: Spotify Canvas incluso</div>
+				<div class="package-footer">
+					<span>À vista ou parcelado no cartão</span>
+					<span class="warning">Apenas 4 vagas/mês</span>
+				</div>
+			</article>
+		</section>
+
+		<section class="checklist" aria-label="Checklist de materiais">
+			<h2>Para iniciarmos, precisamos de:</h2>
+			<div class="items">
+				<article class="item red">
+					<strong>Clipe ou link do vídeo</strong>
+					<span>YouTube ou WeTransfer</span>
+				</article>
+				<article class="item green">
+					<strong>Áudio em WAV</strong>
+					<span>Arquivo da música finalizado</span>
+				</article>
+				<article class="item blue">
+					<strong>Logo do artista</strong>
+					<span>PNG com fundo transparente</span>
+				</article>
+				<article class="item gold">
+					<strong>Data do lançamento</strong>
+					<span>Para as artes de pré-save</span>
+				</article>
+				<article class="item violet">
+					<strong>Nome do single</strong>
+					<span>Título oficial da música</span>
+				</article>
+			</div>
+		</section>
+
+		<section class="cta" aria-label="Contato">
+			<p>Envie os materiais e acelere o alcance do seu próximo lançamento.</p>
+			<a href="https://wa.me/5519993941536?text=Olá%2C%20quero%20fechar%20um%20pacote%20de%20lançamento" target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+			<div class="channels">YOUTUBE ADS | GOOGLE ADS | META ADS</div>
+		</section>
+	</main>
+
+	<div class="sticky-whats" aria-label="Acesso rápido ao WhatsApp">
+		<a href="https://wa.me/5519993941536?text=Olá%2C%20tenho%20interesse%20nos%20pacotes%20de%20lançamento" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#8df7ae" d="M20.5 3.5A11.5 11.5 0 0 0 2.8 17.2L1.7 22.3l5.2-1.1A11.5 11.5 0 1 0 20.5 3.5Zm-8.9 18.4a9.5 9.5 0 0 1-4.9-1.4l-.3-.2-3.1.6.7-3-.2-.3a9.5 9.5 0 1 1 7.8 4.3Zm5.2-6.6c-.3-.1-1.8-.9-2.1-1s-.5-.1-.8.1-.9 1-.9 1.2-.3.2-.6.1a7.8 7.8 0 0 1-3.8-3.4c-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.1-.3.2-.5 0-.2 0-.3-.1-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.7s1.1 3.2 1.2 3.4c.2.2 2.2 3.4 5.2 4.8.7.3 1.3.5 1.8.7.7.2 1.3.2 1.8.1.6-.1 1.8-.8 2.1-1.6.3-.8.3-1.5.2-1.6-.2-.2-.4-.2-.7-.3Z"></path></svg>Chamar no WhatsApp</a>
+	</div>
+</body>
+</html>
